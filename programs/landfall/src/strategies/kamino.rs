@@ -12,6 +12,8 @@ use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
 use crate::constants::KAMINO_LENDING_PROGRAM;
 
 pub const RESERVE_MIN_LEN: usize = 5032;
+/// `sha256("account:Reserve")[..8]`
+pub const RESERVE_DISCRIMINATOR: [u8; 8] = [0x2b, 0xf2, 0xcc, 0xca, 0x1a, 0xf7, 0x3b, 0x7f];
 const OFF_LENDING_MARKET: usize = 32;
 const OFF_LIQ_MINT: usize = 128;
 const OFF_LIQ_AVAILABLE: usize = 224;
@@ -62,7 +64,7 @@ impl ReserveView {
     }
 
     pub fn parse_data(d: &[u8]) -> Option<Self> {
-        if d.len() < RESERVE_MIN_LEN {
+        if d.len() < RESERVE_MIN_LEN || d[..8] != RESERVE_DISCRIMINATOR {
             return None;
         }
         let available = (u64_at(d, OFF_LIQ_AVAILABLE) as u128).checked_shl(SF_SHIFT)?;

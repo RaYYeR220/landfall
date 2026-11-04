@@ -26,6 +26,19 @@ pub fn set_curator(ctx: Context<AdminOnly>, curator: Pubkey) -> Result<()> {
     Ok(())
 }
 
+/// Admin: switch a strategy on or off without touching its accounts. A
+/// disabled strategy takes no new allocations, and if its accounts stop
+/// parsing it is valued at zero for redemptions (idle stays withdrawable).
+pub fn set_strategy_enabled(ctx: Context<AdminOnly>, strategy: u8, enabled: bool) -> Result<()> {
+    let v = &mut ctx.accounts.vault;
+    match strategy {
+        SOURCE_KAMINO => v.kamino.enabled = enabled,
+        SOURCE_JLEND => v.jlend.enabled = enabled,
+        _ => return err!(LandfallError::InvalidSource),
+    }
+    Ok(())
+}
+
 pub fn set_params(ctx: Context<CuratorOnly>, idle_buffer_bps: u16, sweep_fee: u64, min_sweep: u64) -> Result<()> {
     require!(idle_buffer_bps as u128 <= BPS, LandfallError::InvalidParams);
     let v = &mut ctx.accounts.vault;

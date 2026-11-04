@@ -41,6 +41,23 @@ pub fn inbox_pda(vault: &Pubkey, owner: &Pubkey) -> Pubkey {
     Pubkey::find_program_address(&[landfall::INBOX_SEED, vault.as_ref(), owner.as_ref()], &landfall::id()).0
 }
 
+pub fn program_data_address() -> Pubkey {
+    Pubkey::find_program_address(&[landfall::id().as_ref()], &landfall::BPF_UPGRADEABLE_LOADER).0
+}
+
+/// ProgramData header (loader state 3) naming `authority` as upgrade authority.
+pub fn set_upgrade_authority(svm: &mut LiteSVM, authority: &Pubkey) {
+    let mut d = vec![0u8; 45];
+    d[0..4].copy_from_slice(&3u32.to_le_bytes());
+    d[12] = 1;
+    d[13..45].copy_from_slice(authority.as_ref());
+    svm.set_account(
+        program_data_address(),
+        Account { lamports: 1_000_000_000, data: d, owner: landfall::BPF_UPGRADEABLE_LOADER, executable: false, rent_epoch: 0 },
+    )
+    .unwrap();
+}
+
 pub fn mint_data(authority: &Pubkey, supply: u64, decimals: u8) -> Vec<u8> {
     let mut d = vec![0u8; 82];
     d[0..4].copy_from_slice(&1u32.to_le_bytes());
@@ -94,6 +111,7 @@ impl Env {
         let admin = Keypair::new();
         let usdc_authority = Keypair::new();
         svm.airdrop(&admin.pubkey(), 100_000_000_000).unwrap();
+        set_upgrade_authority(&mut svm, &admin.pubkey());
         svm.set_account(
             USDC,
             Account { lamports: 1_000_000_000, data: mint_data(&usdc_authority.pubkey(), 0, 6), owner: TOKEN_PROGRAM, executable: false, rent_epoch: 0 },
@@ -108,13 +126,19 @@ impl Env {
     }
 
     pub fn with_svm(svm: LiteSVM, admin: Keypair, usdc_authority: Keypair) -> Self {
+        let mut env = Self::uninitialised(svm, admin, usdc_authority);
+        env.init_vault(1_000_000);
+        env
+    }
+
+    /// Everything but `init_vault` (admin funded with 10 test USDC).
+    pub fn uninitialised(svm: LiteSVM, admin: Keypair, usdc_authority: Keypair) -> Self {
         let vault = vault_pda(&USDC);
         let share_mint = share_mint_pda(&vault);
         let idle = ata(&vault, &USDC);
         let mut env = Env { svm, admin, usdc_authority, vault, share_mint, idle };
         let admin_pk = env.admin.pubkey();
         env.fund_usdc(&admin_pk, 10_000_000);
-        env.init_vault(1_000_000);
         env
     }
 
@@ -176,8 +200,14 @@ impl Env {
     }
 
     pub fn init_vault(&mut self, seed: u64) {
-        let admin = self.admin.pubkey();
-        let ix = Instruction::new_with_bytes(
+        let admin_kp = self.admin.insecure_clone();
+        let ix = self.init_vault_ix(&admin_kp.pubkey(), seed);
+        self.ok(&[ix], &[&admin_kp]);
+    }
+
+    pub fn init_vault_ix(&self, admin: &Pubkey, seed: u64) -> Instruction {
+        let admin = *admin;
+        Instruction::new_with_bytes(
             landfall::id(),
             &landfall::instruction::InitVault {
                 params: landfall::InitVaultParams { curator: admin, idle_buffer_bps: 1_000, sweep_fee: 10_000, min_sweep: 1_000_000, seed_amount: seed },
@@ -191,14 +221,13 @@ impl Env {
                 idle: self.idle,
                 dead_shares: ata(&self.vault, &self.share_mint),
                 admin_usdc: ata(&admin, &USDC),
+                program_data: program_data_address(),
                 token_program: TOKEN_PROGRAM,
                 associated_token_program: ATA_PROGRAM,
                 system_program: SYSTEM_PROGRAM,
             }
             .to_account_metas(None),
-        );
-        let admin_kp = self.admin.insecure_clone();
-        self.ok(&[ix], &[&admin_kp]);
+        )
     }
 
     /// The four valuation accounts in program order.

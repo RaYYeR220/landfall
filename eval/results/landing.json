@@ -7,14 +7,14 @@
   "results": [
     {
       "docs_recipe": {
-        "compute_units": 74809,
+        "compute_units": 74800,
         "error": null,
         "landed": true,
         "usdc_left_in_intermediary": 1
       },
       "id": "healthy",
       "landfall": {
-        "compute_units": 39300,
+        "compute_units": 39340,
         "error": null,
         "landed": true,
         "shares_minted": 24960000,
@@ -31,7 +31,7 @@
       },
       "id": "deposit_limit_reached",
       "landfall": {
-        "compute_units": 39300,
+        "compute_units": 39340,
         "error": null,
         "landed": true,
         "shares_minted": 24960000,
@@ -48,7 +48,7 @@
       },
       "id": "usdc_outside_price_band",
       "landfall": {
-        "compute_units": 39300,
+        "compute_units": 39340,
         "error": null,
         "landed": true,
         "shares_minted": 24960000,
@@ -65,7 +65,7 @@
       },
       "id": "oracle_stale",
       "landfall": {
-        "compute_units": 39300,
+        "compute_units": 39388,
         "error": null,
         "landed": true,
         "shares_minted": 24960000,
@@ -82,7 +82,7 @@
       },
       "id": "market_emergency_mode",
       "landfall": {
-        "compute_units": 39300,
+        "compute_units": 39340,
         "error": null,
         "landed": true,
         "shares_minted": 24960000,
@@ -99,7 +99,7 @@
       },
       "id": "reserve_not_active",
       "landfall": {
-        "compute_units": 39300,
+        "compute_units": 39340,
         "error": null,
         "landed": true,
         "shares_minted": 24960000,
@@ -116,7 +116,7 @@
       },
       "id": "reserve_layout_changed",
       "landfall": {
-        "compute_units": 38547,
+        "compute_units": 38584,
         "error": null,
         "landed": true,
         "shares_minted": 24960000,

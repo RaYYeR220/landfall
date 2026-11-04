@@ -12,6 +12,8 @@ use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
 use crate::constants::JUPITER_LEND_PROGRAM;
 
 pub const LENDING_LEN: usize = 196;
+/// `sha256("account:Lending")[..8]`
+pub const LENDING_DISCRIMINATOR: [u8; 8] = [0x87, 0xc7, 0x52, 0x10, 0xf9, 0x83, 0xb6, 0xf1];
 const OFF_MINT: usize = 8;
 const OFF_FTOKEN_MINT: usize = 40;
 const OFF_TOKEN_EXCHANGE_PRICE: usize = 115;
@@ -37,7 +39,7 @@ impl LendingView {
     }
 
     pub fn parse_data(d: &[u8]) -> Option<Self> {
-        if d.len() < LENDING_LEN {
+        if d.len() < LENDING_LEN || d[..8] != LENDING_DISCRIMINATOR {
             return None;
         }
         let price = u64::from_le_bytes(d[OFF_TOKEN_EXCHANGE_PRICE..OFF_TOKEN_EXCHANGE_PRICE + 8].try_into().ok()?);

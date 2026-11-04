@@ -62,6 +62,7 @@ fn write_client_vectors() {
             idle: env.idle,
             dead_shares: ata(&env.vault, &env.share_mint),
             admin_usdc: ata(&admin, &USDC),
+            program_data: program_data_address(),
             token_program: TOKEN_PROGRAM,
             associated_token_program: ATA_PROGRAM,
             system_program: SYSTEM_PROGRAM,

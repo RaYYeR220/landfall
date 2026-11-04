@@ -1,5 +1,5 @@
 {
-  "admin": "4zdsh4CjtymKJ8kXKHGJdnF3DCswS78taREZWW2b9yYn",
+  "admin": "6n8LkenY4bGArndrYKRmsA4nHzAULAzuyBnys7eEi1VP",
   "allocate_jlend": {
     "data": "92d8e6a2ed1aae5600093d0000000000",
     "keys": [
@@ -266,10 +266,10 @@
     ]
   },
   "init_vault": {
-    "data": "4d4f559621d9346a3b56dc45656d74f7908e1febca5635b0e372c8d43414ae542e5b422d2cadf9d3e803102700000000000040420f000000000040420f0000000000",
+    "data": "4d4f559621d9346a55d9defc802f01a3d305ba1607c8eeba45fda408ae754dfe51913508ac7a4546e803102700000000000040420f000000000040420f0000000000",
     "keys": [
       [
-        "4zdsh4CjtymKJ8kXKHGJdnF3DCswS78taREZWW2b9yYn",
+        "6n8LkenY4bGArndrYKRmsA4nHzAULAzuyBnys7eEi1VP",
         true,
         true
       ],
@@ -299,9 +299,14 @@
         true
       ],
       [
-        "FXocGnz8GzvhDNFJkSyQrvuZjj9cSQ7Hvn2FS4Abn4dZ",
+        "49gNmYCH23TU5fPPq7e6q7kFQBsS8n3LXPtiEPxiirH1",
         false,
         true
+      ],
+      [
+        "Ar9mYHF3aqmDJrYWE7JR2rugYxLeX38BDfkHGK1A9uLj",
+        false,
+        false
       ],
       [
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -721,7 +726,7 @@
     "data": "193ac113ba54ecbb7017a00f4d000000000000005800000000000000",
     "keys": [
       [
-        "4zdsh4CjtymKJ8kXKHGJdnF3DCswS78taREZWW2b9yYn",
+        "6n8LkenY4bGArndrYKRmsA4nHzAULAzuyBnys7eEi1VP",
         true,
         false
       ],

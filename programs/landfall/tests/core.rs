@@ -253,3 +253,27 @@ fn non_curator_cannot_pause() {
     assert!(env.send(&[ix], &[&mallory]).is_err());
     assert!(!env.vault_state().paused);
 }
+
+#[test]
+fn only_the_upgrade_authority_can_create_the_vault() {
+    let (mut svm, admin, usdc) = Env::bare();
+    let squatter = Keypair::new();
+    svm.airdrop(&squatter.pubkey(), 10_000_000_000).unwrap();
+    let mut env = Env::uninitialised(svm, admin, usdc);
+    let sq = squatter.pubkey();
+    env.fund_usdc(&sq, 2_000_000);
+    let ix = env.init_vault_ix(&sq, 1_000_000);
+    assert!(env.send(&[ix], &[&squatter]).is_err());
+    assert!(env.svm.get_account(&env.vault).map(|a| a.data.is_empty()).unwrap_or(true));
+    env.init_vault(1_000_000); // the real authority still can
+    assert_eq!(env.mint_supply(&env.share_mint), 1_000_000);
+}
+
+#[test]
+fn prefunding_the_share_mint_address_does_not_brick_init() {
+    let (mut svm, admin, usdc) = Env::bare();
+    let share_mint = share_mint_pda(&vault_pda(&USDC));
+    svm.airdrop(&share_mint, 1).unwrap();
+    let env = Env::with_svm(svm, admin, usdc);
+    assert_eq!(env.mint_supply(&env.share_mint), 1_000_000);
+}

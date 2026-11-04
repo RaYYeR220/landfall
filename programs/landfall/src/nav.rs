@@ -77,7 +77,8 @@ fn jlend_live(vault: &Vault, lending: &AccountInfo, ftoken: &AccountInfo) -> Opt
 /// Computes NAV. Configured strategies must be passed at their configured
 /// addresses. If such an account cannot be parsed (protocol upgrade, closed
 /// account) a landing (`strict = false`) uses the cached value; anything that
-/// pays out (`strict = true`) fails.
+/// pays out (`strict = true`) fails, unless the admin has disabled that
+/// strategy, in which case it is valued at zero so idle USDC stays redeemable.
 pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool) -> Result<Nav> {
     let get = |i: usize| remaining.get(i);
     let mut nav = Nav { idle, live: true, ..Default::default() };
@@ -87,6 +88,11 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
         require_keys(get(1), &vault.kamino.collateral_account)?;
         match kamino_live(vault, get(0).unwrap(), get(1).unwrap()) {
             Some(v) => nav.kamino = v,
+            None if strict && !vault.kamino.enabled => {
+                // admin wrote the strategy off: pay out of what is verifiable
+                nav.kamino = 0;
+                nav.live = false;
+            }
             None => {
                 require!(!strict, LandfallError::StrategyValuationUnavailable);
                 nav.kamino = vault.kamino.cached_value;
@@ -99,6 +105,11 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
         require_keys(get(3), &vault.jlend.ftoken_account)?;
         match jlend_live(vault, get(2).unwrap(), get(3).unwrap()) {
             Some(v) => nav.jlend = v,
+            None if strict && !vault.jlend.enabled => {
+                // admin wrote the strategy off: pay out of what is verifiable
+                nav.jlend = 0;
+                nav.live = false;
+            }
             None => {
                 require!(!strict, LandfallError::StrategyValuationUnavailable);
                 nav.jlend = vault.jlend.cached_value;

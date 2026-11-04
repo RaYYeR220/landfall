@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{create_account, CreateAccount};
+use anchor_lang::system_program::{allocate, assign, create_account, transfer, Allocate, Assign, CreateAccount, Transfer};
 use anchor_spl::associated_token::{self, AssociatedToken, Create};
 use anchor_spl::token::{self, InitializeMint2, Mint, MintTo, Token, TokenAccount, TransferChecked};
 
@@ -47,12 +47,28 @@ pub struct InitVault<'info> {
     pub dead_shares: UncheckedAccount<'info>,
     #[account(mut, token::mint = usdc_mint, token::authority = admin)]
     pub admin_usdc: Box<Account<'info, TokenAccount>>,
+    /// CHECK: this program's ProgramData account; `admin` must be its upgrade
+    /// authority, so only the deployer can create the canonical vault.
+    pub program_data: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 
+/// Requires `admin` to be the upgrade authority recorded in this program's
+/// ProgramData (BPF upgradeable loader state 3: tag u32, slot u64, Option<Pubkey>).
+fn require_upgrade_authority(program_data: &AccountInfo, admin: &Pubkey) -> Result<()> {
+    let (expected, _) = Pubkey::find_program_address(&[crate::ID.as_ref()], &BPF_UPGRADEABLE_LOADER);
+    require_keys_eq!(program_data.key(), expected, LandfallError::Unauthorized);
+    require_keys_eq!(*program_data.owner, BPF_UPGRADEABLE_LOADER, LandfallError::Unauthorized);
+    let d = program_data.try_borrow_data()?;
+    require!(d.len() >= 45 && d[0..4] == 3u32.to_le_bytes() && d[12] == 1, LandfallError::Unauthorized);
+    require!(&d[13..45] == admin.as_ref(), LandfallError::Unauthorized);
+    Ok(())
+}
+
 pub fn handler(ctx: Context<InitVault>, params: InitVaultParams) -> Result<()> {
+    require_upgrade_authority(&ctx.accounts.program_data.to_account_info(), &ctx.accounts.admin.key())?;
     require!(params.idle_buffer_bps as u128 <= BPS, LandfallError::InvalidParams);
     require!(params.seed_amount > 0, LandfallError::InvalidParams);
 
@@ -87,17 +103,26 @@ pub fn handler(ctx: Context<InitVault>, params: InitVaultParams) -> Result<()> {
     let vault_key = ctx.accounts.vault.key();
     let mint_bump = [ctx.bumps.share_mint];
     let mint_seeds: &[&[u8]] = &[SHARES_SEED, vault_key.as_ref(), &mint_bump];
-    let space = Mint::LEN as u64;
-    create_account(
-        CpiContext::new_with_signer(
-            ctx.accounts.system_program.key(),
-            CreateAccount { from: ctx.accounts.admin.to_account_info(), to: ctx.accounts.share_mint.to_account_info() },
-            &[mint_seeds],
-        ),
-        Rent::get()?.minimum_balance(space as usize),
-        space,
-        &ctx.accounts.token_program.key(),
-    )?;
+    // Works even if someone pre-funded the predictable mint address.
+    let space = Mint::LEN;
+    let rent = Rent::get()?.minimum_balance(space);
+    let mint_info = ctx.accounts.share_mint.to_account_info();
+    let sys = ctx.accounts.system_program.key();
+    if mint_info.lamports() == 0 {
+        create_account(
+            CpiContext::new_with_signer(sys, CreateAccount { from: ctx.accounts.admin.to_account_info(), to: mint_info.clone() }, &[mint_seeds]),
+            rent,
+            space as u64,
+            &ctx.accounts.token_program.key(),
+        )?;
+    } else {
+        let missing = rent.saturating_sub(mint_info.lamports());
+        if missing > 0 {
+            transfer(CpiContext::new(sys, Transfer { from: ctx.accounts.admin.to_account_info(), to: mint_info.clone() }), missing)?;
+        }
+        allocate(CpiContext::new_with_signer(sys, Allocate { account_to_allocate: mint_info.clone() }, &[mint_seeds]), space as u64)?;
+        assign(CpiContext::new_with_signer(sys, Assign { account_to_assign: mint_info.clone() }, &[mint_seeds]), &ctx.accounts.token_program.key())?;
+    }
     token::initialize_mint2(
         CpiContext::new(ctx.accounts.token_program.key(), InitializeMint2 { mint: ctx.accounts.share_mint.to_account_info() }),
         SHARE_DECIMALS,

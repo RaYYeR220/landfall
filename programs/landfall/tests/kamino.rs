@@ -211,3 +211,27 @@ fn landing_rejects_caller_chosen_valuation() {
     env.ok(&[env.sweep_ix(&keeper.pubkey(), &owner)], &[&keeper]);
     assert!(env.token_balance(&ata(&owner, &env.share_mint)) > 0);
 }
+
+#[test]
+fn written_off_strategy_keeps_idle_redeemable() {
+    let (mut env, keeper) = setup();
+    let alice = user(&mut env);
+    deposit(&mut env, &alice, 100_000_000);
+    env.ok(&env.allocate_kamino_ixs(&keeper.pubkey(), 50_000_000), &[&keeper]);
+    // Kamino breaks: redemptions can no longer be valued
+    env.patch_account(&K_RESERVE, |a| a.data.truncate(1000));
+    let dest = ata(&alice.pubkey(), &USDC);
+    assert!(env.send(&[env.redeem_ix(&alice.pubkey(), &dest, 10_000_000, 0)], &[&alice]).is_err());
+    // the admin writes it off; idle (51 USDC) pays out at a conservative price
+    let admin = env.admin.insecure_clone();
+    let off = anchor_lang::solana_program::instruction::Instruction::new_with_bytes(
+        landfall::id(),
+        &anchor_lang::InstructionData::data(&landfall::instruction::SetStrategyEnabled { strategy: 1, enabled: false }),
+        anchor_lang::ToAccountMetas::to_account_metas(&landfall::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
+    );
+    env.ok(&[off], &[&admin]);
+    env.ok(&[env.redeem_ix(&alice.pubkey(), &dest, 10_000_000, 0)], &[&alice]);
+    let got = env.token_balance(&dest);
+    // 10 of 101 shares, valued on idle (51 USDC) only
+    assert!(got > 5_000_000 && got < 5_100_000, "got {got}");
+}

@@ -33,6 +33,10 @@ pub mod landfall {
         instructions::admin::set_curator(ctx, curator)
     }
 
+    pub fn set_strategy_enabled(ctx: Context<AdminOnly>, strategy: u8, enabled: bool) -> Result<()> {
+        instructions::admin::set_strategy_enabled(ctx, strategy, enabled)
+    }
+
     pub fn set_params(ctx: Context<CuratorOnly>, idle_buffer_bps: u16, sweep_fee: u64, min_sweep: u64) -> Result<()> {
         instructions::admin::set_params(ctx, idle_buffer_bps, sweep_fee, min_sweep)
     }

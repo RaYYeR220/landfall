@@ -212,6 +212,12 @@ export const redeemIxs = (
 
 // ---- admin (curator / admin keys) ----
 
+const BPF_UPGRADEABLE_LOADER = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
+export const programDataAddress = (programId: PublicKey) => PublicKey.findProgramAddressSync([programId.toBuffer()], BPF_UPGRADEABLE_LOADER)[0];
+
+export const setStrategyEnabledIx = (v: VaultAddresses, admin: PublicKey, strategy: "kamino" | "jupiter-lend", enabled: boolean) =>
+  ix(v, "set_strategy_enabled", [r(admin, true), w(v.vault)], [Buffer.from([strategy === "kamino" ? 1 : 2, enabled ? 1 : 0])]);
+
 export const initVaultIx = (
   v: VaultAddresses,
   admin: PublicKey,
@@ -228,6 +234,7 @@ export const initVaultIx = (
       w(v.idle),
       w(v.deadShares),
       w(ata(admin, v.usdcMint)),
+      r(programDataAddress(v.programId)),
       r(TOKEN_PROGRAM_ID),
       r(ASSOCIATED_TOKEN_PROGRAM_ID),
       r(SYSTEM_PROGRAM_ID),
