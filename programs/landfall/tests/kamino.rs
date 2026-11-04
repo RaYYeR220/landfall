@@ -237,7 +237,7 @@ fn written_off_strategy_keeps_idle_redeemable() {
 }
 
 #[test]
-fn write_off_never_lowers_the_landing_price() {
+fn write_off_prices_entry_and_exit_the_same() {
     let (mut env, keeper) = setup();
     let alice = user(&mut env);
     deposit(&mut env, &alice, 100_000_000);
@@ -251,12 +251,15 @@ fn write_off_never_lowers_the_landing_price() {
         anchor_lang::ToAccountMetas::to_account_metas(&landfall::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
     );
     env.ok(&[off], &[&admin]);
-    // anyone can sync; the write-off must not reach the cache
+    // the cache keeps the last live value (sync never writes a write-off into it)
     env.ok(&[env.sync_nav_ix()], &[&keeper]);
     assert_eq!(env.vault_state().kamino.cached_value, cached);
-    // so a new landing is still priced with the strategy at its last live value
+    // a deposit followed by an immediate redemption is value-neutral: no entry/exit gap to farm
     let bob = user(&mut env);
     deposit(&mut env, &bob, 10_000_000);
     let bob_shares = env.token_balance(&ata(&bob.pubkey(), &env.share_mint));
-    assert!(bob_shares <= 10_000_010, "bob bought in below NAV: {bob_shares}");
+    let dest = ata(&bob.pubkey(), &USDC);
+    env.ok(&[env.redeem_ix(&bob.pubkey(), &dest, bob_shares, 0)], &[&bob]);
+    let back = env.token_balance(&dest);
+    assert!(back <= 10_000_000 && back >= 9_999_990, "round trip returned {back}");
 }
