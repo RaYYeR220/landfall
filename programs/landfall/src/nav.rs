@@ -29,6 +29,8 @@ pub struct Nav {
     pub jlend: u64,
     /// True when every configured strategy was valued from live accounts.
     pub live: bool,
+    pub kamino_live: bool,
+    pub jlend_live: bool,
 }
 
 impl Nav {
@@ -87,7 +89,10 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
         require_keys(get(0), &vault.kamino.reserve)?;
         require_keys(get(1), &vault.kamino.collateral_account)?;
         match kamino_live(vault, get(0).unwrap(), get(1).unwrap()) {
-            Some(v) => nav.kamino = v,
+            Some(v) => {
+                nav.kamino = v;
+                nav.kamino_live = true;
+            }
             None if strict && !vault.kamino.enabled => {
                 // admin wrote the strategy off: pay out of what is verifiable
                 nav.kamino = 0;
@@ -104,7 +109,10 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
         require_keys(get(2), &vault.jlend.lending)?;
         require_keys(get(3), &vault.jlend.ftoken_account)?;
         match jlend_live(vault, get(2).unwrap(), get(3).unwrap()) {
-            Some(v) => nav.jlend = v,
+            Some(v) => {
+                nav.jlend = v;
+                nav.jlend_live = true;
+            }
             None if strict && !vault.jlend.enabled => {
                 // admin wrote the strategy off: pay out of what is verifiable
                 nav.jlend = 0;

@@ -235,3 +235,28 @@ fn written_off_strategy_keeps_idle_redeemable() {
     // 10 of 101 shares, valued on idle (51 USDC) only
     assert!(got > 5_000_000 && got < 5_100_000, "got {got}");
 }
+
+#[test]
+fn write_off_never_lowers_the_landing_price() {
+    let (mut env, keeper) = setup();
+    let alice = user(&mut env);
+    deposit(&mut env, &alice, 100_000_000);
+    env.ok(&env.allocate_kamino_ixs(&keeper.pubkey(), 50_000_000), &[&keeper]);
+    let cached = env.vault_state().kamino.cached_value;
+    env.patch_account(&K_RESERVE, |a| a.data.truncate(1000));
+    let admin = env.admin.insecure_clone();
+    let off = anchor_lang::solana_program::instruction::Instruction::new_with_bytes(
+        landfall::id(),
+        &anchor_lang::InstructionData::data(&landfall::instruction::SetStrategyEnabled { strategy: 1, enabled: false }),
+        anchor_lang::ToAccountMetas::to_account_metas(&landfall::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
+    );
+    env.ok(&[off], &[&admin]);
+    // anyone can sync; the write-off must not reach the cache
+    env.ok(&[env.sync_nav_ix()], &[&keeper]);
+    assert_eq!(env.vault_state().kamino.cached_value, cached);
+    // so a new landing is still priced with the strategy at its last live value
+    let bob = user(&mut env);
+    deposit(&mut env, &bob, 10_000_000);
+    let bob_shares = env.token_balance(&ata(&bob.pubkey(), &env.share_mint));
+    assert!(bob_shares <= 10_000_010, "bob bought in below NAV: {bob_shares}");
+}

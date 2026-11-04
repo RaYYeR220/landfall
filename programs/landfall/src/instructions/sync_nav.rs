@@ -30,10 +30,16 @@ pub fn handler(ctx: Context<SyncNav>) -> Result<()> {
     ];
     let nav = nav::compute(&a.vault, a.idle.amount, &navs, true)?;
     let slot = Clock::get()?.slot;
+    // Only live valuations reach the cache: a written-off (zero-valued)
+    // strategy must not lower the price later landings fall back to.
     let vault = &mut ctx.accounts.vault;
-    vault.kamino.cached_value = nav.kamino;
-    vault.kamino.cached_slot = slot;
-    vault.jlend.cached_value = nav.jlend;
-    vault.jlend.cached_slot = slot;
+    if nav.kamino_live {
+        vault.kamino.cached_value = nav.kamino;
+        vault.kamino.cached_slot = slot;
+    }
+    if nav.jlend_live {
+        vault.jlend.cached_value = nav.jlend;
+        vault.jlend.cached_slot = slot;
+    }
     Ok(())
 }
