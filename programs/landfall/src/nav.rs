@@ -3,9 +3,16 @@
 //! Strategy valuation accounts are passed as the first four remaining
 //! accounts, in this order:
 //! `[kamino_reserve, vault_kamino_collateral, jlend_lending, vault_jlend_ftoken]`.
-//! In a landing (`deposit`, `sweep_inbox`) a missing or unparseable account
-//! falls back to the strategy's cached value so the landing never reverts on
-//! protocol state. Everything that pays out (`redeem`) values strictly.
+//! Configured strategies must be passed at their configured addresses (the
+//! caller cannot pick a price source). In a landing (`deposit`, `sweep_inbox`)
+//! an account that exists at the right address but no longer parses falls back
+//! to the strategy's cached value, so a landing never reverts on protocol
+//! state. Everything that pays out (`redeem`) values strictly.
+//!
+//! Known limit: protocol exchange rates are read as last stored by the
+//! protocol. Interest accrued since the protocol's last update is not counted
+//! until someone refreshes it (every allocate / redeem-via path refreshes in the
+//! same transaction); the resulting mispricing is bounded by APY × staleness.
 
 use anchor_lang::prelude::*;
 
@@ -42,10 +49,14 @@ pub fn token_amount(info: &AccountInfo, expected: &Pubkey) -> Option<u64> {
     Some(u64::from_le_bytes(data[64..72].try_into().ok()?))
 }
 
+/// The caller must pass exactly the configured accounts; a wrong or missing
+/// key is rejected, so nobody can choose between a live and a cached price.
+fn require_keys(info: Option<&AccountInfo>, expected: &Pubkey) -> Result<()> {
+    require!(info.map(|i| i.key == expected).unwrap_or(false), LandfallError::InvalidStrategyAccount);
+    Ok(())
+}
+
 fn kamino_live(vault: &Vault, reserve: &AccountInfo, coll: &AccountInfo) -> Option<u64> {
-    if reserve.key != &vault.kamino.reserve {
-        return None;
-    }
     let view = ReserveView::parse(reserve)?;
     if view.collateral_mint != vault.kamino.collateral_mint || view.liquidity_mint != vault.usdc_mint {
         return None;
@@ -55,9 +66,6 @@ fn kamino_live(vault: &Vault, reserve: &AccountInfo, coll: &AccountInfo) -> Opti
 }
 
 fn jlend_live(vault: &Vault, lending: &AccountInfo, ftoken: &AccountInfo) -> Option<u64> {
-    if lending.key != &vault.jlend.lending {
-        return None;
-    }
     let view = LendingView::parse(lending)?;
     if view.ftoken_mint != vault.jlend.ftoken_mint || view.mint != vault.usdc_mint {
         return None;
@@ -66,13 +74,18 @@ fn jlend_live(vault: &Vault, lending: &AccountInfo, ftoken: &AccountInfo) -> Opt
     view.assets_for_shares(shares)
 }
 
-/// Computes NAV. `strict` = every configured strategy must be valued live.
+/// Computes NAV. Configured strategies must be passed at their configured
+/// addresses. If such an account cannot be parsed (protocol upgrade, closed
+/// account) a landing (`strict = false`) uses the cached value; anything that
+/// pays out (`strict = true`) fails.
 pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool) -> Result<Nav> {
     let get = |i: usize| remaining.get(i);
     let mut nav = Nav { idle, live: true, ..Default::default() };
 
     if vault.kamino.reserve != Pubkey::default() {
-        match get(0).zip(get(1)).and_then(|(r, c)| kamino_live(vault, r, c)) {
+        require_keys(get(0), &vault.kamino.reserve)?;
+        require_keys(get(1), &vault.kamino.collateral_account)?;
+        match kamino_live(vault, get(0).unwrap(), get(1).unwrap()) {
             Some(v) => nav.kamino = v,
             None => {
                 require!(!strict, LandfallError::StrategyValuationUnavailable);
@@ -82,7 +95,9 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
         }
     }
     if vault.jlend.lending != Pubkey::default() {
-        match get(2).zip(get(3)).and_then(|(l, f)| jlend_live(vault, l, f)) {
+        require_keys(get(2), &vault.jlend.lending)?;
+        require_keys(get(3), &vault.jlend.ftoken_account)?;
+        match jlend_live(vault, get(2).unwrap(), get(3).unwrap()) {
             Some(v) => nav.jlend = v,
             None => {
                 require!(!strict, LandfallError::StrategyValuationUnavailable);

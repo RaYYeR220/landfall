@@ -11,6 +11,7 @@ rust-version = "1.89.0"
 [profile.release]
 overflow-checks = true
 lto = "fat"
+opt-level = "s"
 codegen-units = 1
 [profile.release.build-override]
 opt-level = 3

@@ -180,3 +180,34 @@ fn deposit_with_live_kamino_valuation_cu() {
     // Bob's shares are priced at NAV: value of his shares ≈ 5 USDC
     let _ = Pubkey::default();
 }
+
+#[test]
+fn landing_rejects_caller_chosen_valuation() {
+    let (mut env, keeper) = setup();
+    let alice = user(&mut env);
+    deposit(&mut env, &alice, 50_000_000);
+    env.ok(&env.allocate_kamino_ixs(&keeper.pubkey(), 40_000_000), &[&keeper]);
+    let bob = user(&mut env);
+    env.fund_usdc(&bob.pubkey(), 5_000_000);
+    let create = env.create_ata_ix(&bob.pubkey(), &bob.pubkey(), &env.share_mint);
+    env.ok(&[create], &[&bob]);
+    // omitting the valuation accounts is rejected (no silent switch to the cached price)
+    let mut omitted = env.deposit_ix(&bob.pubkey(), &bob.pubkey(), 5_000_000);
+    omitted.accounts.truncate(9);
+    assert!(env.send(&[omitted], &[&bob]).is_err());
+    // so is a look-alike reserve at another address
+    let mut swapped = env.deposit_ix(&bob.pubkey(), &bob.pubkey(), 5_000_000);
+    swapped.accounts[9].pubkey = K_MARKET;
+    assert!(env.send(&[swapped], &[&bob]).is_err());
+    // and a keeper sweeping someone's inbox cannot pick the price either
+    let owner = Pubkey::new_unique();
+    env.ok(&[env.open_inbox_ix(&keeper.pubkey(), &owner)], &[&keeper]);
+    let inbox = inbox_pda(&env.vault, &owner);
+    env.set_token(&ata(&inbox, &USDC), &USDC, &inbox, 3_000_000);
+    env.fund_usdc(&keeper.pubkey(), 0);
+    let mut sweep = env.sweep_ix(&keeper.pubkey(), &owner);
+    sweep.accounts.truncate(13);
+    assert!(env.send(&[sweep], &[&keeper]).is_err());
+    env.ok(&[env.sweep_ix(&keeper.pubkey(), &owner)], &[&keeper]);
+    assert!(env.token_balance(&ata(&owner, &env.share_mint)) > 0);
+}
