@@ -1,0 +1,129 @@
+{
+  "bridged_usdc": 25000000,
+  "description": "Solana bridge-in landing transaction (Intents Connect shape) under adverse lending-market conditions. Mainnet snapshot, LiteSVM.",
+  "docs_recipe_landed": 3,
+  "landfall_landed": 7,
+  "network_fee_usdc": 40000,
+  "results": [
+    {
+      "docs_recipe": {
+        "compute_units": 74800,
+        "error": null,
+        "landed": true,
+        "usdc_left_in_intermediary": 1
+      },
+      "id": "healthy",
+      "landfall": {
+        "compute_units": 39300,
+        "error": null,
+        "landed": true,
+        "shares_minted": 24960000,
+        "usdc_left_in_intermediary": 0
+      },
+      "scenario": "Normal conditions (negative control: both must land)"
+    },
+    {
+      "docs_recipe": {
+        "compute_units": 41827,
+        "error": "Program KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD failed: custom program error: 0x17ca",
+        "landed": false,
+        "usdc_left_in_intermediary": 25000000
+      },
+      "id": "deposit_limit_reached",
+      "landfall": {
+        "compute_units": 39300,
+        "error": null,
+        "landed": true,
+        "shares_minted": 24960000,
+        "usdc_left_in_intermediary": 0
+      },
+      "scenario": "Kamino USDC reserve is at its deposit limit when the bridged funds arrive"
+    },
+    {
+      "docs_recipe": {
+        "compute_units": 99079,
+        "error": null,
+        "landed": true,
+        "usdc_left_in_intermediary": 1
+      },
+      "id": "usdc_outside_price_band",
+      "landfall": {
+        "compute_units": 39300,
+        "error": null,
+        "landed": true,
+        "shares_minted": 24960000,
+        "usdc_left_in_intermediary": 0
+      },
+      "scenario": "USDC prints outside the reserve's accepted price band (0.98–1.01), e.g. a depeg wobble"
+    },
+    {
+      "docs_recipe": {
+        "compute_units": 121870,
+        "error": null,
+        "landed": true,
+        "usdc_left_in_intermediary": 1
+      },
+      "id": "oracle_stale",
+      "landfall": {
+        "compute_units": 39300,
+        "error": null,
+        "landed": true,
+        "shares_minted": 24960000,
+        "usdc_left_in_intermediary": 0
+      },
+      "scenario": "No fresh Scope price for 10 minutes (reserve max price age is 180 s)"
+    },
+    {
+      "docs_recipe": {
+        "compute_units": 4878,
+        "error": "Program KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD failed: custom program error: 0x179a",
+        "landed": false,
+        "usdc_left_in_intermediary": 25000000
+      },
+      "id": "market_emergency_mode",
+      "landfall": {
+        "compute_units": 39300,
+        "error": null,
+        "landed": true,
+        "shares_minted": 24960000,
+        "usdc_left_in_intermediary": 0
+      },
+      "scenario": "Kamino main market switches to emergency mode"
+    },
+    {
+      "docs_recipe": {
+        "compute_units": 32370,
+        "error": "Program KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD failed: custom program error: 0x17c2",
+        "landed": false,
+        "usdc_left_in_intermediary": 25000000
+      },
+      "id": "reserve_not_active",
+      "landfall": {
+        "compute_units": 39300,
+        "error": null,
+        "landed": true,
+        "shares_minted": 24960000,
+        "usdc_left_in_intermediary": 0
+      },
+      "scenario": "The USDC reserve is marked obsolete (status ≠ active)"
+    },
+    {
+      "docs_recipe": {
+        "compute_units": 4572,
+        "error": "Program KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD failed: SBF program panicked",
+        "landed": false,
+        "usdc_left_in_intermediary": 25000000
+      },
+      "id": "reserve_layout_changed",
+      "landfall": {
+        "compute_units": 38547,
+        "error": null,
+        "landed": true,
+        "shares_minted": 24960000,
+        "usdc_left_in_intermediary": 0
+      },
+      "scenario": "A protocol upgrade leaves the reserve account unreadable to integrators"
+    }
+  ],
+  "scenarios": 7
+}
