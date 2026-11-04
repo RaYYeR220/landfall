@@ -79,9 +79,10 @@ fn jlend_live(vault: &Vault, lending: &AccountInfo, ftoken: &AccountInfo) -> Opt
 /// Computes NAV. Configured strategies must be passed at their configured
 /// addresses. If such an account cannot be parsed (protocol upgrade, closed
 /// account) a landing (`strict = false`) uses the cached value; anything that
-/// pays out (`strict = true`) fails. Once the admin disables such a strategy
-/// it is valued at zero for landings and payouts alike (no price gap between
-/// entering and leaving), so idle USDC stays redeemable.
+/// pays out (`strict = true`) fails. Once the admin disables such a strategy,
+/// payouts value it at zero (idle USDC stays redeemable) while landings keep
+/// its last live value: entry is never priced below the last verified NAV and
+/// exit never above what is verifiable, so neither side can farm the gap.
 pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool) -> Result<Nav> {
     let get = |i: usize| remaining.get(i);
     let mut nav = Nav { idle, live: true, ..Default::default() };
@@ -94,8 +95,8 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
                 nav.kamino = v;
                 nav.kamino_live = true;
             }
-            None if !vault.kamino.enabled => {
-                // written off by the admin: in and out are priced on what is verifiable
+            None if strict && !vault.kamino.enabled => {
+                // written off by the admin: pay out of what is verifiable only
                 nav.kamino = 0;
                 nav.live = false;
             }
@@ -114,8 +115,8 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
                 nav.jlend = v;
                 nav.jlend_live = true;
             }
-            None if !vault.jlend.enabled => {
-                // written off by the admin: in and out are priced on what is verifiable
+            None if strict && !vault.jlend.enabled => {
+                // written off by the admin: pay out of what is verifiable only
                 nav.jlend = 0;
                 nav.live = false;
             }

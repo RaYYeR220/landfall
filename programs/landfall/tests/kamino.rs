@@ -237,7 +237,7 @@ fn written_off_strategy_keeps_idle_redeemable() {
 }
 
 #[test]
-fn write_off_prices_entry_and_exit_the_same() {
+fn write_off_neither_dilutes_holders_nor_pays_round_trips() {
     let (mut env, keeper) = setup();
     let alice = user(&mut env);
     deposit(&mut env, &alice, 100_000_000);
@@ -254,12 +254,15 @@ fn write_off_prices_entry_and_exit_the_same() {
     // the cache keeps the last live value (sync never writes a write-off into it)
     env.ok(&[env.sync_nav_ix()], &[&keeper]);
     assert_eq!(env.vault_state().kamino.cached_value, cached);
-    // a deposit followed by an immediate redemption is value-neutral: no entry/exit gap to farm
+    // entry is priced at the last verified NAV (no dilution of existing holders) ...
+    let alice_before = env.token_balance(&ata(&alice.pubkey(), &env.share_mint));
     let bob = user(&mut env);
     deposit(&mut env, &bob, 10_000_000);
     let bob_shares = env.token_balance(&ata(&bob.pubkey(), &env.share_mint));
+    assert!(bob_shares <= 10_000_010, "bob bought in below the last verified NAV: {bob_shares}");
+    // ... and exit on what is verifiable, so a round trip can never profit from the write-off
     let dest = ata(&bob.pubkey(), &USDC);
     env.ok(&[env.redeem_ix(&bob.pubkey(), &dest, bob_shares, 0)], &[&bob]);
-    let back = env.token_balance(&dest);
-    assert!(back <= 10_000_000 && back >= 9_999_990, "round trip returned {back}");
+    assert!(env.token_balance(&dest) < 10_000_000);
+    assert_eq!(env.token_balance(&ata(&alice.pubkey(), &env.share_mint)), alice_before);
 }
