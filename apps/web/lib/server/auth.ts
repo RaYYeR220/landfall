@@ -57,4 +57,11 @@ export const limiter = (max: number, windowMs: number) => {
   };
 };
 
-export const clientIp = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+/**
+ * Client IP as set by the hosting edge (Vercel sets `x-real-ip` and overwrites
+ * `x-forwarded-for`); falls back to the last proxy hop, never a client-chosen
+ * first entry. Per-IP limits are a secondary control: the primary bounds are
+ * the signed ownership proof and the demo wallet's own balance.
+ */
+export const clientIp = (req: Request) =>
+  req.headers.get("x-real-ip")?.trim() || req.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() || "local";
