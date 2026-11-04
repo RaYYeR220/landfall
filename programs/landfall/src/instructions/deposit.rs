@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, TransferChecked};
 
-use crate::events::{Landed, LandingSource};
+use crate::events::{Landed, LandingDeferred, LandingSource};
 use crate::instructions::landing::mint_landing_shares;
 use crate::nav;
 use crate::state::Vault;
@@ -42,6 +42,12 @@ pub fn handler<'info>(ctx: Context<'info, Deposit<'info>>, amount: u64) -> Resul
     }
 
     let nav_before = nav::compute(&ctx.accounts.vault, ctx.accounts.idle.amount, ctx.remaining_accounts, false)?;
+    if nav_before.written_off {
+        // Vault in maintenance: keep the funds where they are (the depositor's
+        // own account) instead of minting at an unverifiable price or reverting.
+        emit!(LandingDeferred { vault: ctx.accounts.vault.key(), owner: ctx.accounts.owner.key(), amount });
+        return Ok(());
+    }
 
     token::transfer_checked(
         CpiContext::new(

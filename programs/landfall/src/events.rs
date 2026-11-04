@@ -20,6 +20,14 @@ pub struct Landed {
     pub nav_live: bool,
 }
 
+/// A landing was left with the depositor because the vault is in maintenance.
+#[event]
+pub struct LandingDeferred {
+    pub vault: Pubkey,
+    pub owner: Pubkey,
+    pub amount: u64,
+}
+
 #[event]
 pub struct Allocated {
     pub vault: Pubkey,

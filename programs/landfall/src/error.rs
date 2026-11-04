@@ -28,4 +28,6 @@ pub enum LandfallError {
     MathOverflow,
     #[msg("Unknown redemption source")]
     InvalidSource,
+    #[msg("A strategy is written off; landings resume once the curator resolves it")]
+    VaultInMaintenance,
 }

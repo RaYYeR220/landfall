@@ -31,6 +31,9 @@ pub struct Nav {
     pub live: bool,
     pub kamino_live: bool,
     pub jlend_live: bool,
+    /// A disabled strategy could not be valued: landings pause until the
+    /// curator resolves it (re-points or the protocol recovers).
+    pub written_off: bool,
 }
 
 impl Nav {
@@ -79,10 +82,11 @@ fn jlend_live(vault: &Vault, lending: &AccountInfo, ftoken: &AccountInfo) -> Opt
 /// Computes NAV. Configured strategies must be passed at their configured
 /// addresses. If such an account cannot be parsed (protocol upgrade, closed
 /// account) a landing (`strict = false`) uses the cached value; anything that
-/// pays out (`strict = true`) fails. Once the admin disables such a strategy,
-/// payouts value it at zero (idle USDC stays redeemable) while landings keep
-/// its last live value: entry is never priced below the last verified NAV and
-/// exit never above what is verifiable, so neither side can farm the gap.
+/// pays out (`strict = true`) fails. Once the admin disables such a strategy
+/// it is valued at zero and `written_off` is set: payouts continue on what is
+/// verifiable, while landings pause without reverting (`deposit` leaves the
+/// funds with the depositor, `sweep_inbox` leaves them in the inbox), so no
+/// shares are ever minted at a price that payouts would not honour.
 pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool) -> Result<Nav> {
     let get = |i: usize| remaining.get(i);
     let mut nav = Nav { idle, live: true, ..Default::default() };
@@ -95,10 +99,11 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
                 nav.kamino = v;
                 nav.kamino_live = true;
             }
-            None if strict && !vault.kamino.enabled => {
+            None if !vault.kamino.enabled => {
                 // written off by the admin: pay out of what is verifiable only
                 nav.kamino = 0;
                 nav.live = false;
+                nav.written_off = true;
             }
             None => {
                 require!(!strict, LandfallError::StrategyValuationUnavailable);
@@ -115,10 +120,11 @@ pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool
                 nav.jlend = v;
                 nav.jlend_live = true;
             }
-            None if strict && !vault.jlend.enabled => {
+            None if !vault.jlend.enabled => {
                 // written off by the admin: pay out of what is verifiable only
                 nav.jlend = 0;
                 nav.live = false;
+                nav.written_off = true;
             }
             None => {
                 require!(!strict, LandfallError::StrategyValuationUnavailable);

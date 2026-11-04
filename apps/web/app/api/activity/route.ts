@@ -18,7 +18,7 @@ export const GET = handle(async (req) => {
   if (!owner) return bad("owner must be a Solana address");
 
   const [book, chain, executions] = await Promise.all([
-    addressBook(owner).catch(() => null),
+    addressBook(owner, { allowCreate: false }).catch(() => null),
     chainHistory(owner).catch(() => []),
     wallet ? connectApi().listExecutions(wallet, {}).catch(() => []) : Promise.resolve([]),
   ]);

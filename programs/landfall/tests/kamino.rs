@@ -237,7 +237,7 @@ fn written_off_strategy_keeps_idle_redeemable() {
 }
 
 #[test]
-fn write_off_neither_dilutes_holders_nor_pays_round_trips() {
+fn write_off_pauses_landings_without_reverting() {
     let (mut env, keeper) = setup();
     let alice = user(&mut env);
     deposit(&mut env, &alice, 100_000_000);
@@ -251,18 +251,23 @@ fn write_off_neither_dilutes_holders_nor_pays_round_trips() {
         anchor_lang::ToAccountMetas::to_account_metas(&landfall::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
     );
     env.ok(&[off], &[&admin]);
-    // the cache keeps the last live value (sync never writes a write-off into it)
     env.ok(&[env.sync_nav_ix()], &[&keeper]);
-    assert_eq!(env.vault_state().kamino.cached_value, cached);
-    // entry is priced at the last verified NAV (no dilution of existing holders) ...
-    let alice_before = env.token_balance(&ata(&alice.pubkey(), &env.share_mint));
+    assert_eq!(env.vault_state().kamino.cached_value, cached, "a write-off must not reach the cache");
+    // a wallet / Intents Connect landing succeeds as a no-op: funds stay with the depositor
     let bob = user(&mut env);
     deposit(&mut env, &bob, 10_000_000);
-    let bob_shares = env.token_balance(&ata(&bob.pubkey(), &env.share_mint));
-    assert!(bob_shares <= 10_000_010, "bob bought in below the last verified NAV: {bob_shares}");
-    // ... and exit on what is verifiable, so a round trip can never profit from the write-off
-    let dest = ata(&bob.pubkey(), &USDC);
-    env.ok(&[env.redeem_ix(&bob.pubkey(), &dest, bob_shares, 0)], &[&bob]);
-    assert!(env.token_balance(&dest) < 10_000_000);
-    assert_eq!(env.token_balance(&ata(&alice.pubkey(), &env.share_mint)), alice_before);
+    assert_eq!(env.token_balance(&ata(&bob.pubkey(), &env.share_mint)), 0);
+    assert_eq!(env.token_balance(&ata(&bob.pubkey(), &USDC)), 10_000_000);
+    // a sweep refuses: the persistent-address deposit waits in the inbox
+    let owner = Pubkey::new_unique();
+    env.ok(&[env.open_inbox_ix(&keeper.pubkey(), &owner)], &[&keeper]);
+    let inbox = inbox_pda(&env.vault, &owner);
+    env.set_token(&ata(&inbox, &USDC), &USDC, &inbox, 3_000_000);
+    env.fund_usdc(&keeper.pubkey(), 0);
+    assert!(env.send(&[env.sweep_ix(&keeper.pubkey(), &owner)], &[&keeper]).is_err());
+    assert_eq!(env.token_balance(&ata(&inbox, &USDC)), 3_000_000);
+    // redemptions keep paying out of what is verifiable
+    let dest = ata(&alice.pubkey(), &USDC);
+    env.ok(&[env.redeem_ix(&alice.pubkey(), &dest, 10_000_000, 0)], &[&alice]);
+    assert!(env.token_balance(&dest) > 5_000_000);
 }

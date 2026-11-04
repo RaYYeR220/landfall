@@ -58,6 +58,8 @@ pub fn handler<'info>(ctx: Context<'info, SweepInbox<'info>>) -> Result<()> {
     let fee = ctx.accounts.vault.sweep_fee.min(balance / 100);
     let net = balance - fee;
     let nav_before = nav::compute(&ctx.accounts.vault, ctx.accounts.idle.amount, ctx.remaining_accounts, false)?;
+    // Vault in maintenance: the deposit waits in the owner's inbox.
+    require!(!nav_before.written_off, LandfallError::VaultInMaintenance);
 
     let vault_key = ctx.accounts.vault.key();
     let owner_key = ctx.accounts.owner.key();

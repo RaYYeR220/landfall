@@ -32,12 +32,19 @@ const amount = () => BigInt(Math.round(Number(process.env.DEMO_FIRE_AMOUNT_USDC 
 let lastFire = 0;
 const COOLDOWN_MS = 45_000;
 
+/**
+ * Bounds: one fire per cooldown (slot reserved before any await), the
+ * feature flag, and the wallet balance itself (the wallet only ever holds the
+ * demo budget). Fired funds land in the demo identity's own vault position.
+ */
 const guard = async () => {
-  if (Date.now() - lastFire < COOLDOWN_MS) throw new Error(`a live deposit was fired ${Math.round((Date.now() - lastFire) / 1000)} s ago — try again shortly`);
+  if (process.env.DEMO_ENABLED !== "true") throw Object.assign(new Error("live demo is switched off"), { status: 403 });
+  const now = Date.now();
+  if (now - lastFire < COOLDOWN_MS) throw Object.assign(new Error(`a live deposit was fired ${Math.round((now - lastFire) / 1000)} s ago, try again shortly`), { status: 429 });
+  lastFire = now;
   const pub = createPublicClient({ chain: base, transport: transport() });
   const bal = await pub.readContract({ address: BASE_USDC, abi: erc20Abi, functionName: "balanceOf", args: [account().address] });
-  if (bal < amount()) throw new Error("the demo wallet's budget is spent for today");
-  lastFire = Date.now();
+  if (bal < amount()) throw Object.assign(new Error("the demo budget is spent for today"), { status: 429 });
 };
 
 const sendUsdc = async (to: `0x${string}`) => {
@@ -59,7 +66,7 @@ export const demoIdentity = async () => {
 export const fireViaAddress = async () => {
   await guard();
   const { evm, owner } = await demoIdentity();
-  const book = await addressBook(owner);
+  const book = await addressBook(owner, { allowCreate: true });
   const evmAddr = book.chains.find((c) => c.chain === "evm")?.address;
   if (!evmAddr) throw new Error(book.status === "pending-approval" ? "persistent addresses are not enabled for this key yet" : "no EVM deposit address");
   const txHash = await sendUsdc(evmAddr as `0x${string}`);

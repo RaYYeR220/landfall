@@ -50,11 +50,23 @@ const assetsFor = (byChain: Map<string, SupportedAsset[]>, chain: DepositChain) 
   return chains.flatMap((c) => byChain.get(c) ?? []).filter((a) => (seen.has(a.symbol) ? false : (seen.add(a.symbol), true)));
 };
 
-/** Opens the owner's inbox (and its USDC account) if it doesn't exist yet. Keeper pays the rent. */
-export const ensureInbox = async (owner: PublicKey) => {
+export const inboxExists = async (owner: PublicKey) =>
+  Boolean(await connection().getAccountInfo(inboxAddresses(vault, owner).inboxUsdc, "confirmed"));
+
+// Global cap on keeper-paid inbox creations (rent ≈ 0.0035 SOL each), per instance.
+let createdWindow = { at: Date.now(), n: 0 };
+const MAX_NEW_INBOXES_PER_HOUR = Number(process.env.MAX_NEW_INBOXES_PER_HOUR ?? 60);
+
+/**
+ * Opens the owner's inbox (and its USDC account) if it doesn't exist yet. The
+ * keeper pays the rent, so callers must have verified the owner first.
+ */
+export const ensureInbox = async (owner: PublicKey, allowCreate: boolean) => {
   const a = inboxAddresses(vault, owner);
-  const info = await connection().getAccountInfo(a.inboxUsdc, "confirmed");
-  if (info) return { ...a, created: false };
+  if (await inboxExists(owner)) return { ...a, created: false };
+  if (!allowCreate) throw Object.assign(new Error("sign in with your wallet to open your deposit addresses"), { status: 401 });
+  if (Date.now() - createdWindow.at > 3_600_000) createdWindow = { at: Date.now(), n: 0 };
+  if (++createdWindow.n > MAX_NEW_INBOXES_PER_HOUR) throw Object.assign(new Error("too many new accounts right now, try again later"), { status: 429 });
   const k = keeper();
   const tx = new Transaction().add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }), openInboxIx(vault, k.publicKey, owner));
   await sendAndConfirmTransaction(connection(), tx, [k], { commitment: "confirmed", maxRetries: 3 });
@@ -64,12 +76,13 @@ export const ensureInbox = async (owner: PublicKey) => {
 const cache = new Map<string, AddressBook>();
 
 /** Every chain's persistent deposit address for `owner`, all paying into the owner's inbox. */
-export const addressBook = async (owner: PublicKey, confidential = false): Promise<AddressBook> => {
+export const addressBook = async (owner: PublicKey, opts: { confidential?: boolean; allowCreate?: boolean } = {}): Promise<AddressBook> => {
+  const confidential = Boolean(opts.confidential);
   const key = `${owner.toBase58()}:${confidential}`;
   const hit = cache.get(key);
   if (hit && hit.status === "ready") return hit;
 
-  const a = await ensureInbox(owner);
+  const a = await ensureInbox(owner, Boolean(opts.allowCreate));
   const byChain = await supportedAssets().catch(() => new Map<string, SupportedAsset[]>());
   let status: AddressBook["status"] = "ready";
   const chains: ChainAddress[] = [];
@@ -100,6 +113,7 @@ export const addressBook = async (owner: PublicKey, confidential = false): Promi
     chains.push(...results);
   }
   const book: AddressBook = { owner: owner.toBase58(), inbox: a.inbox.toBase58(), inboxUsdc: a.inboxUsdc.toBase58(), confidential, status, chains };
+  if (cache.size > 2_000) cache.clear();
   cache.set(key, book);
   return book;
 };

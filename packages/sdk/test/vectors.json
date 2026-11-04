@@ -1,5 +1,5 @@
 {
-  "admin": "6n8LkenY4bGArndrYKRmsA4nHzAULAzuyBnys7eEi1VP",
+  "admin": "GPEGxPNTq8HSwXQ67cKZKQunEX6Nz5FxkFfT4eS1EbEy",
   "allocate_jlend": {
     "data": "92d8e6a2ed1aae5600093d0000000000",
     "keys": [
@@ -266,10 +266,10 @@
     ]
   },
   "init_vault": {
-    "data": "4d4f559621d9346a55d9defc802f01a3d305ba1607c8eeba45fda408ae754dfe51913508ac7a4546e803102700000000000040420f000000000040420f0000000000",
+    "data": "4d4f559621d9346ae491178588accce626a2de88d01b510be9fdfa62d3e050ebe3c99d0241050f5ae803102700000000000040420f000000000040420f0000000000",
     "keys": [
       [
-        "6n8LkenY4bGArndrYKRmsA4nHzAULAzuyBnys7eEi1VP",
+        "GPEGxPNTq8HSwXQ67cKZKQunEX6Nz5FxkFfT4eS1EbEy",
         true,
         true
       ],
@@ -299,7 +299,7 @@
         true
       ],
       [
-        "49gNmYCH23TU5fPPq7e6q7kFQBsS8n3LXPtiEPxiirH1",
+        "768sJAdsLqmh4KCA3naBNtwM2DiESFbwgqSvK73LA14C",
         false,
         true
       ],
@@ -726,7 +726,7 @@
     "data": "193ac113ba54ecbb7017a00f4d000000000000005800000000000000",
     "keys": [
       [
-        "6n8LkenY4bGArndrYKRmsA4nHzAULAzuyBnys7eEi1VP",
+        "GPEGxPNTq8HSwXQ67cKZKQunEX6Nz5FxkFfT4eS1EbEy",
         true,
         false
       ],
