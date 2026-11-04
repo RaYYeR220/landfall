@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::AssociatedToken;
-use anchor_spl::token::{self, Mint, MintTo, Token, TokenAccount, TransferChecked};
+use anchor_lang::system_program::{create_account, CreateAccount};
+use anchor_spl::associated_token::{self, AssociatedToken, Create};
+use anchor_spl::token::{self, InitializeMint2, Mint, MintTo, Token, TokenAccount, TransferChecked};
 
 use crate::constants::*;
 use crate::error::LandfallError;
@@ -30,15 +31,9 @@ pub struct InitVault<'info> {
         bump
     )]
     pub vault: Box<Account<'info, Vault>>,
-    #[account(
-        init,
-        payer = admin,
-        seeds = [SHARES_SEED, vault.key().as_ref()],
-        bump,
-        mint::decimals = SHARE_DECIMALS,
-        mint::authority = vault,
-    )]
-    pub share_mint: Box<Account<'info, Mint>>,
+    /// CHECK: created and initialised in the handler as a classic SPL mint (PDA).
+    #[account(mut, seeds = [SHARES_SEED, vault.key().as_ref()], bump)]
+    pub share_mint: UncheckedAccount<'info>,
     #[account(
         init,
         payer = admin,
@@ -46,14 +41,10 @@ pub struct InitVault<'info> {
         associated_token::authority = vault,
     )]
     pub idle: Box<Account<'info, TokenAccount>>,
-    /// Holds the seed shares forever: no instruction lets the vault redeem its own shares.
-    #[account(
-        init,
-        payer = admin,
-        associated_token::mint = share_mint,
-        associated_token::authority = vault,
-    )]
-    pub dead_shares: Box<Account<'info, TokenAccount>>,
+    /// CHECK: ATA(vault, share_mint), created in the handler. Holds the seed
+    /// shares forever: no instruction lets the vault redeem its own shares.
+    #[account(mut)]
+    pub dead_shares: UncheckedAccount<'info>,
     #[account(mut, token::mint = usdc_mint, token::authority = admin)]
     pub admin_usdc: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
@@ -91,6 +82,39 @@ pub fn handler(ctx: Context<InitVault>, params: InitVaultParams) -> Result<()> {
         params.seed_amount,
         ctx.accounts.usdc_mint.decimals,
     )?;
+
+    // Share mint: classic SPL mint at a PDA, authority = vault.
+    let vault_key = ctx.accounts.vault.key();
+    let mint_bump = [ctx.bumps.share_mint];
+    let mint_seeds: &[&[u8]] = &[SHARES_SEED, vault_key.as_ref(), &mint_bump];
+    let space = Mint::LEN as u64;
+    create_account(
+        CpiContext::new_with_signer(
+            ctx.accounts.system_program.key(),
+            CreateAccount { from: ctx.accounts.admin.to_account_info(), to: ctx.accounts.share_mint.to_account_info() },
+            &[mint_seeds],
+        ),
+        Rent::get()?.minimum_balance(space as usize),
+        space,
+        &ctx.accounts.token_program.key(),
+    )?;
+    token::initialize_mint2(
+        CpiContext::new(ctx.accounts.token_program.key(), InitializeMint2 { mint: ctx.accounts.share_mint.to_account_info() }),
+        SHARE_DECIMALS,
+        &vault_key,
+        None,
+    )?;
+    associated_token::create(CpiContext::new(
+        ctx.accounts.associated_token_program.key(),
+        Create {
+            payer: ctx.accounts.admin.to_account_info(),
+            associated_token: ctx.accounts.dead_shares.to_account_info(),
+            authority: ctx.accounts.vault.to_account_info(),
+            mint: ctx.accounts.share_mint.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+        },
+    ))?;
 
     let shares = math::shares_for_assets(params.seed_amount, 0, 0).ok_or(LandfallError::MathOverflow)?;
     let usdc_key = ctx.accounts.usdc_mint.key();

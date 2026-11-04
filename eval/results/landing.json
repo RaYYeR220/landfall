@@ -7,7 +7,7 @@
   "results": [
     {
       "docs_recipe": {
-        "compute_units": 74800,
+        "compute_units": 74809,
         "error": null,
         "landed": true,
         "usdc_left_in_intermediary": 1
