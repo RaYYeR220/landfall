@@ -17,3 +17,5 @@ coverage
 keys/
 *.keypair.json
 programs/landfall/tests/fixtures/programs/
+*.tsbuildinfo
+next-env.d.ts
