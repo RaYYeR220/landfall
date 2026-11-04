@@ -1,0 +1,12 @@
+{
+  "name": "landfall",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build:program": "cargo-build-sbf --tools-version v1.52 --manifest-path programs/landfall/Cargo.toml --sbf-out-dir target/deploy",
+    "test:program": "cargo test -p landfall",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

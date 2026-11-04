@@ -1,0 +1,25 @@
+{
+  "name": "@landfall/sdk",
+  "version": "0.1.0",
+  "description": "Client SDK for Landfall: vault instructions, Intents Connect recipes and Aurora Intents clients",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aurora-is-near/intents-connect": "7.29.0",
+    "@solana/spl-token": "0.4.14",
+    "@solana/web3.js": "1.98.4",
+    "bs58": "6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "typescript": "5.8.3",
+    "vitest": "3.2.4"
+  }
+}
