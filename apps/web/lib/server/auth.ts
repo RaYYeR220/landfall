@@ -23,7 +23,15 @@ export const verifyOwnership = async (p: OwnershipProof): Promise<PublicKey> => 
   const message = ownershipMessage(p.owner, p.issuedAt);
 
   if (/^0x[0-9a-fA-F]{40}$/.test(p.wallet)) {
-    const ok = await verifyMessage({ address: p.wallet as `0x${string}`, message, signature: p.signature as `0x${string}` });
+    // Intents Connect envelope `secp256k1:<base58 r‖s‖v(0/1)>` or a plain 0x signature
+    let sigHex = p.signature as `0x${string}`;
+    if (p.signature.startsWith("secp256k1:")) {
+      const raw = bs58.decode(p.signature.slice("secp256k1:".length));
+      if (raw.length !== 65) throw Object.assign(new Error("bad signature"), { status: 401 });
+      raw[64] = raw[64] < 27 ? raw[64] + 27 : raw[64];
+      sigHex = `0x${Buffer.from(raw).toString("hex")}`;
+    }
+    const ok = await verifyMessage({ address: p.wallet as `0x${string}`, message, signature: sigHex });
     if (!ok) throw Object.assign(new Error("bad signature"), { status: 401 });
     // an EVM wallet owns its vault shares through its Intents Connect Solana intermediary
     const inter = await connectApi().getIntermediary(p.wallet);
@@ -32,7 +40,8 @@ export const verifyOwnership = async (p: OwnershipProof): Promise<PublicKey> => 
   }
 
   const wallet = new PublicKey(p.wallet);
-  const sig = p.signature.startsWith("0x") ? Buffer.from(p.signature.slice(2), "hex") : bs58.decode(p.signature);
+  const raw = p.signature.startsWith("ed25519:") ? p.signature.slice("ed25519:".length) : p.signature;
+  const sig = raw.startsWith("0x") ? Buffer.from(raw.slice(2), "hex") : bs58.decode(raw);
   if (!ed25519.verify(sig, new TextEncoder().encode(message), wallet.toBytes())) throw Object.assign(new Error("bad signature"), { status: 401 });
   if (p.owner !== wallet.toBase58()) {
     const inter = await connectApi().getIntermediary(wallet.toBase58());

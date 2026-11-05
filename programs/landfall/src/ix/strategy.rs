@@ -62,6 +62,7 @@ pub fn jlend_accounts<'a>(v: &Vault, j: &'a [AccountView]) -> Result<&'a [Accoun
             && v.jlend.lending != pinocchio::Address::default(),
         LandfallError::InvalidStrategyAccount,
     )?;
+    key_is(&j[10], &JUPITER_LIQUIDITY_PROGRAM)?;
     key_is(&j[12], &JUPITER_LEND_PROGRAM)?;
     key_is(&j[13], &ATA_PROGRAM)?;
     key_is(&j[14], &SYSTEM_PROGRAM)?;

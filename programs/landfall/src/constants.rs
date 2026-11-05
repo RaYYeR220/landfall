@@ -25,6 +25,7 @@ pub const BPF_UPGRADEABLE_LOADER: Address = address!("BPFLoaderUpgradeab1e111111
 pub const INSTRUCTIONS_SYSVAR: Address = address!("Sysvar1nstructions1111111111111111111111111");
 pub const KAMINO_LENDING_PROGRAM: Address = address!("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD");
 pub const JUPITER_LEND_PROGRAM: Address = address!("jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9");
+pub const JUPITER_LIQUIDITY_PROGRAM: Address = address!("jupeiUmn818Jg1ekPURTpr4mFo29p46vygyykFJ3wZC");
 
 // Instruction discriminators: sha256("global:<name>")[..8] (Anchor-compatible wire format).
 pub const IX_INIT_VAULT: [u8; 8] = [0x4d, 0x4f, 0x55, 0x96, 0x21, 0xd9, 0x34, 0x6a];

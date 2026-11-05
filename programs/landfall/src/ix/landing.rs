@@ -73,6 +73,11 @@ pub fn deposit(accounts: &mut [AccountView], data: &[u8]) -> ProgramResult {
         return Ok(());
     }
 
+    // dust that would mint zero shares stays with the depositor
+    let supply = read_mint(share_mint)?.supply;
+    if math::shares_for_assets(amount, supply, nav_before.total()).ok_or(LandfallError::MathOverflow)? == 0 {
+        return Ok(());
+    }
     let decimals = read_mint(usdc_mint)?.decimals;
     token::transfer(depositor_usdc, usdc_mint, idle, depositor, amount, decimals, &[])?;
     let shares = mint_landing_shares(&v, share_mint, owner_shares, vault_acc, amount, &nav_before)?;

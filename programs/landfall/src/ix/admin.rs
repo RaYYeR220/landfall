@@ -175,6 +175,8 @@ pub fn configure_kamino(accounts: &mut [AccountView], data: &[u8]) -> ProgramRes
     let mut v = load_for(admin, vault_acc, true)?;
     programs(token_p, ata_p, system_p)?;
     key_is(usdc_mint, &v.usdc_mint)?;
+    // a configured strategy cannot be re-pointed (funds in the old position would be orphaned)
+    require(v.kamino.reserve == Address::default() || &v.kamino.reserve == reserve.address(), LandfallError::InvalidStrategyAccount)?;
     let view = ReserveView::parse(reserve).ok_or(LandfallError::InvalidStrategyAccount)?;
     require(view.liquidity_mint == v.usdc_mint && &view.collateral_mint == coll_mint.address(), LandfallError::InvalidStrategyAccount)?;
     CreateIdempotent { funding_account: admin, account: coll_acc, wallet: vault_acc, mint: coll_mint, system_program: system_p, token_program: token_p }.invoke()?;
@@ -194,6 +196,7 @@ pub fn configure_jlend(accounts: &mut [AccountView], data: &[u8]) -> ProgramResu
     let mut v = load_for(admin, vault_acc, true)?;
     programs(token_p, ata_p, system_p)?;
     key_is(usdc_mint, &v.usdc_mint)?;
+    require(v.jlend.lending == Address::default() || &v.jlend.lending == lending.address(), LandfallError::InvalidStrategyAccount)?;
     let view = LendingView::parse(lending).ok_or(LandfallError::InvalidStrategyAccount)?;
     require(view.mint == v.usdc_mint && &view.ftoken_mint == ft_mint.address(), LandfallError::InvalidStrategyAccount)?;
     CreateIdempotent { funding_account: admin, account: ft_acc, wallet: vault_acc, mint: ft_mint, system_program: system_p, token_program: token_p }.invoke()?;

@@ -8,7 +8,7 @@
  * Intents Connect docs require.
  */
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
-import type { SolanaStep } from "@aurora-is-near/intents-connect";
+import type { SolanaRecipe, SolanaStep } from "@aurora-is-near/intents-connect";
 import { BACKEND_PLACEHOLDERS } from "@aurora-is-near/intents-connect";
 import { AURORA_ASSETS, TOKEN_PROGRAM_ID, USDC_DECIMALS } from "./constants.js";
 import { createAtaIdempotentIx, depositIx, discriminator, redeemIxs, type RedeemSource } from "./ix.js";
@@ -112,6 +112,26 @@ export const withdrawToSolanaSteps = (
   ...toSteps([createAtaIdempotentIx(intermediary, recipient, v.usdcMint)], intermediary, ["Open recipient USDC account"]),
   transferCheckedStep(ata(intermediary, v.usdcMint).toBase58(), ata(recipient, v.usdcMint).toBase58(), BACKEND_PLACEHOLDERS.intermediary, sendAmount.toString()),
 ];
+
+/**
+ * Intents Connect SDK recipe for the wallet flow (runner / `useExecution`).
+ * Solana recipes size their amount with the `threeRound` fee strategy, so
+ * `ctx.amount` is the literal spendable USDC; anything above it (favourable
+ * slippage) stays in the intermediary and shows up in the recovery centre.
+ */
+export const landfallDepositRecipe = (v: VaultAddresses): SolanaRecipe<void> => ({
+  id: "landfall-deposit",
+  intent: "landfall_deposit",
+  title: "Land in Landfall vault",
+  type: "solana",
+  flow: "bridge-in",
+  destination: { chain: "sol", assetId: AURORA_ASSETS.solanaUsdc, tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" },
+  buildSteps: ({ intermediary, amount }) => {
+    const inter = new PublicKey(intermediary);
+    const ixs = [createAtaIdempotentIx(inter, inter, v.shareMint), depositIx(v, inter, inter, BigInt(amount))];
+    return { steps: toSteps(ixs, inter, ["Open share account", "Land in Landfall vault"]) };
+  },
+});
 
 /** Destination asset of every Landfall bridge-in. */
 export const LANDFALL_DESTINATION = { chain: "sol", assetId: AURORA_ASSETS.solanaUsdc, tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" } as const;
