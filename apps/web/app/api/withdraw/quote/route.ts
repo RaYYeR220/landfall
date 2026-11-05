@@ -2,6 +2,7 @@ import { AURORA_ASSETS, WITHDRAW_DESTINATIONS } from "@landfall/sdk";
 import { clientIp, limiter } from "@/lib/server/auth";
 import { intents } from "@/lib/server/env";
 import { bad, handle, json, pubkeyParam } from "@/lib/server/http";
+import { quoteToken } from "@/lib/server/quoteToken";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,7 @@ export const POST = handle(async (req) => {
   if (!q.depositAddress) return bad("no deposit address in the quote", 502);
   return json({
     depositAddress: q.depositAddress,
+    token: quoteToken(q.depositAddress),
     amountIn: q.amountIn,
     amountOut: q.amountOut,
     amountOutFormatted: q.amountOutFormatted,

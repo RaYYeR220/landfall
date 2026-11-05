@@ -26,15 +26,15 @@ import { signAndSend, type SolanaSigner } from "./solanaTx";
 const vault = vaultAddresses();
 const SOLANA = "solana";
 
-type SwapQuote = { depositAddress: string; amountOutFormatted: string; timeEstimate: number; destination: (typeof WITHDRAW_DESTINATIONS)[number] };
+type SwapQuote = { depositAddress: string; token: string; amountOutFormatted: string; timeEstimate: number; destination: (typeof WITHDRAW_DESTINATIONS)[number] };
 
 const navOf = (v: VaultSummary): Nav =>
   ({ idle: BigInt(Math.floor(v.nav.idle * 1e6)), kamino: BigInt(Math.floor(v.nav.kamino * 1e6)), jupiterLend: BigInt(Math.floor(v.nav.jupiterLend * 1e6)) }) as Nav;
 
-const waitForSwap = async (depositAddress: string, onStatus: (s: string) => void) => {
+const waitForSwap = async (depositAddress: string, token: string, onStatus: (s: string) => void) => {
   const until = Date.now() + 15 * 60_000;
   while (Date.now() < until) {
-    const s = await getJson<{ status: string }>(`/api/withdraw/status?depositAddress=${depositAddress}`).catch(() => null);
+    const s = await getJson<{ status: string }>(`/api/withdraw/status?depositAddress=${depositAddress}&token=${encodeURIComponent(token)}`).catch(() => null);
     if (s) {
       onStatus(s.status);
       if (s.status === "SUCCESS" || s.status === "REFUNDED" || s.status === "FAILED") return s.status;
@@ -112,9 +112,9 @@ export default function Withdraw({ identity, position, vaultInfo }: { identity: 
     });
     setStatus(`About ${q.amountOutFormatted} ${q.destination.symbol} on ${q.destination.label} · sign to withdraw`);
     const sig = await signAndSend(sol(), owner, swapOutIxs(vault, owner, shares, minOut, source, new PublicKey(q.depositAddress)));
-    await getJson("/api/withdraw/submit", { method: "POST", body: JSON.stringify({ txHash: sig, depositAddress: q.depositAddress }) }).catch(() => undefined);
+    await getJson("/api/withdraw/submit", { method: "POST", body: JSON.stringify({ txHash: sig, depositAddress: q.depositAddress, token: q.token }) }).catch(() => undefined);
     refresh();
-    const final = await waitForSwap(q.depositAddress, (s) => setStatus(`${SWAP_LABEL[s] ?? s} · ${q.amountOutFormatted} ${q.destination.symbol} → ${q.destination.label}`));
+    const final = await waitForSwap(q.depositAddress, q.token, (s) => setStatus(`${SWAP_LABEL[s] ?? s} · ${q.amountOutFormatted} ${q.destination.symbol} → ${q.destination.label}`));
     if (final !== "SUCCESS") throw new Error(SWAP_LABEL[final] ?? final);
   };
 
