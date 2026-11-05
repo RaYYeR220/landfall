@@ -1,3 +1,4 @@
+import { Buffer } from "buffer";
 import { PublicKey } from "@solana/web3.js";
 
 export const LANDFALL_PROGRAM_ID = new PublicKey("12pHvK6FYFHP748kom4F3AbKcymKGVN2r9n1GtX3zdyZ");

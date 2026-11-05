@@ -1,3 +1,4 @@
+import { Buffer } from "buffer";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { JUPITER_LEND, KAMINO, VIRTUAL_ASSETS, VIRTUAL_SHARES } from "./constants";
 import { ata, type VaultAddresses } from "./pda";

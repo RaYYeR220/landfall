@@ -3,6 +3,7 @@
  * address has paid, then move spare idle USDC toward the curator's weights.
  * Anyone can run it; Landfall runs it as a service and on demand from the app.
  */
+import { Buffer } from "buffer";
 import {
   ComputeBudgetProgram,
   Connection,
@@ -12,12 +13,12 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { createHash } from "node:crypto";
+import { sha256 } from "@noble/hashes/sha256";
 import { createAtaIdempotentIx, allocateJlendIx, allocateKaminoIxs, sweepInboxIx, syncNavIx } from "./ix";
 import { inboxAddresses, type VaultAddresses } from "./pda";
 import { decodeInbox, readNav, type Nav } from "./state";
 
-const INBOX_DISCRIMINATOR = createHash("sha256").update("account:Inbox").digest().subarray(0, 8);
+const INBOX_DISCRIMINATOR = Buffer.from(sha256(new TextEncoder().encode("account:Inbox"))).subarray(0, 8);
 const INBOX_SIZE = 8 + 32 + 32 + 8 + 8 + 8 + 1;
 
 export type CrankAction =

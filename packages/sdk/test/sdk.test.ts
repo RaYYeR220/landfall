@@ -91,3 +91,44 @@ describe("redeem source", () => {
     expect(redeemSourceFor(nav(10n, 5n, 40n), 40n)).toBe("jupiter-lend");
   });
 });
+
+describe("swap out (Solana wallet to another chain)", () => {
+  it("redeems into the wallet and pays exactly the quoted amount to the deposit address", async () => {
+    const { swapOutIxs, ata: ataOf, USDC_MINT: mint, LANDFALL_PROGRAM_ID: pid } = await import("../src/index");
+    const owner = Keypair.generate().publicKey;
+    const depositAddress = Keypair.generate().publicKey;
+    const ixs = swapOutIxs(v, owner, 5_000_000n, 4_990_000n, "idle", depositAddress);
+    expect(ixs.map((i) => i.programId.toBase58())).toEqual([
+      "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      pid.toBase58(),
+      "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    ]);
+    const transfer = ixs[3];
+    expect(transfer.keys[0].pubkey.equals(ataOf(owner, mint))).toBe(true);
+    expect(transfer.keys[2].pubkey.equals(ataOf(depositAddress, mint))).toBe(true);
+    expect(transfer.data.readBigUInt64LE(1)).toBe(4_990_000n);
+    // redeem pays into the wallet's own USDC account, with the same floor
+    expect(ixs[1].data.readBigUInt64LE(16)).toBe(4_990_000n);
+  });
+
+  it("lists only payout destinations with a known asset id", async () => {
+    const { WITHDRAW_DESTINATIONS } = await import("../src/index");
+    const ids = new Set(WITHDRAW_DESTINATIONS.map((d) => d.id));
+    expect(ids.size).toBe(WITHDRAW_DESTINATIONS.length);
+    for (const d of WITHDRAW_DESTINATIONS) expect(d.assetId).toMatch(/^nep(141|245):/);
+  });
+});
+
+describe("transferCheckedIx", () => {
+  it("matches the SPL Token library byte for byte", async () => {
+    const { createTransferCheckedInstruction } = await import("@solana/spl-token");
+    const { transferCheckedIx, USDC_MINT: mint } = await import("../src/index");
+    const [a, b, c] = [Keypair.generate().publicKey, Keypair.generate().publicKey, Keypair.generate().publicKey];
+    const ours = transferCheckedIx(a, mint, b, c, 1_234_567n);
+    const ref = createTransferCheckedInstruction(a, mint, b, c, 1_234_567n, 6);
+    expect(Buffer.from(ours.data).equals(Buffer.from(ref.data))).toBe(true);
+    expect(ours.keys).toEqual(ref.keys);
+    expect(ours.programId.equals(ref.programId)).toBe(true);
+  });
+});

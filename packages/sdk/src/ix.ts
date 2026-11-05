@@ -1,4 +1,5 @@
-import { createHash } from "node:crypto";
+import { Buffer } from "buffer";
+import { sha256 } from "@noble/hashes/sha256";
 import { AccountMeta, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -11,7 +12,7 @@ import {
 import { ata, inboxAddresses, type VaultAddresses } from "./pda";
 
 /** Anchor instruction discriminator: sha256("global:<name>")[0..8]. */
-export const discriminator = (name: string): Buffer => createHash("sha256").update(`global:${name}`).digest().subarray(0, 8);
+export const discriminator = (name: string): Buffer => Buffer.from(sha256(new TextEncoder().encode(`global:${name}`))).subarray(0, 8);
 
 const u64 = (v: bigint | number): Buffer => {
   const b = Buffer.alloc(8);

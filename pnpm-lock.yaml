@@ -58,7 +58,7 @@ importers:
         version: 1.8.11(@types/react@19.1.8)(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.3.1)(typescript@5.8.3)(zod@3.22.4)
       '@solana/spl-token':
         specifier: 0.4.14
-        version: 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@6.0.6)
       '@solana/wallet-adapter-phantom':
         specifier: 0.9.28
         version: 0.9.28(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))
@@ -123,15 +123,21 @@ importers:
       '@aurora-is-near/intents-connect':
         specifier: 7.29.0
         version: 7.29.0(@types/react@19.1.8)(react@19.3.1)
+      '@noble/hashes':
+        specifier: 1.8.0
+        version: 1.8.0
       '@solana/spl-token':
         specifier: 0.4.14
-        version: 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@6.0.6)
       '@solana/web3.js':
         specifier: 1.98.4
         version: 1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6)
       bs58:
         specifier: 6.0.0
         version: 6.0.0
+      buffer:
+        specifier: 6.0.3
+        version: 6.0.3
     devDependencies:
       '@types/node':
         specifier: 22.15.30
@@ -2582,7 +2588,7 @@ snapshots:
       '@reown/appkit': 1.8.11(@types/react@19.1.8)(bufferutil@4.1.0)(react@19.3.1)(typescript@5.8.3)(zod@3.22.4)
       '@reown/appkit-adapter-ethers': 1.8.11(@ethersproject/sha2@5.8.0)(@types/react@19.1.8)(bufferutil@4.1.0)(ethers@6.15.0(bufferutil@4.1.0))(react@19.3.1)(typescript@5.8.3)(zod@3.22.4)
       '@reown/appkit-adapter-solana': 1.8.11(@types/react@19.1.8)(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.3.1)(typescript@5.8.3)(zod@3.22.4)
-      '@solana/spl-token': 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@solana/spl-token': 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@6.0.6)
       '@solana/wallet-adapter-phantom': 0.9.28(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))
       '@solana/wallet-adapter-solflare': 0.6.32(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))
       '@solana/web3.js': 1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6)
@@ -3101,7 +3107,7 @@ snapshots:
       '@reown/appkit-polyfills': 1.8.11
       '@reown/appkit-utils': 1.8.11(@types/react@19.1.8)(bufferutil@4.1.0)(react@19.3.1)(typescript@5.8.3)(valtio@2.1.7(@types/react@19.1.8)(react@19.3.1))(zod@3.22.4)
       '@reown/appkit-wallet': 1.8.11(bufferutil@4.1.0)(typescript@5.8.3)
-      '@solana/spl-token': 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@solana/spl-token': 0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@6.0.6)
       '@solana/wallet-adapter-base': 0.9.27(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))
       '@solana/wallet-standard-features': 1.3.0
       '@solana/wallet-standard-util': 1.1.2
@@ -3516,7 +3522,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
-  '@solana/buffer-layout-utils@0.2.0(bufferutil@4.1.0)(typescript@5.8.3)':
+  '@solana/buffer-layout-utils@0.2.0(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6)':
     dependencies:
       '@solana/buffer-layout': 4.0.1
       '@solana/web3.js': 1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6)
@@ -3619,10 +3625,10 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@solana/spl-token@0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@solana/spl-token@0.4.14(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6))(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@6.0.6)':
     dependencies:
       '@solana/buffer-layout': 4.0.1
-      '@solana/buffer-layout-utils': 0.2.0(bufferutil@4.1.0)(typescript@5.8.3)
+      '@solana/buffer-layout-utils': 0.2.0(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6)
       '@solana/spl-token-group': 0.0.7(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@solana/spl-token-metadata': 0.1.6(@solana/web3.js@1.98.4(bufferutil@4.1.0)(typescript@5.8.3))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@solana/web3.js': 1.98.4(bufferutil@4.1.0)(typescript@5.8.3)(utf-8-validate@6.0.6)

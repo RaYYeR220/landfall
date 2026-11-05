@@ -7,6 +7,7 @@
  * token accounts derived from it are passed as resolved addresses, as the
  * Intents Connect docs require.
  */
+import { Buffer } from "buffer";
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import type { SolanaRecipe, SolanaStep } from "@aurora-is-near/intents-connect";
 import { BACKEND_PLACEHOLDERS } from "@aurora-is-near/intents-connect";
@@ -135,3 +136,37 @@ export const landfallDepositRecipe = (v: VaultAddresses): SolanaRecipe<void> => 
 
 /** Destination asset of every Landfall bridge-in. */
 export const LANDFALL_DESTINATION = { chain: "sol", assetId: AURORA_ASSETS.solanaUsdc, tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" } as const;
+
+/**
+ * A Solana wallet withdrawing to another chain through the Swap API, in one
+ * transaction: redeem into the wallet, then pay the quote's deposit address.
+ * `minOut` is both the redemption floor and the quoted `amount`.
+ */
+export const swapOutIxs = (v: VaultAddresses, owner: PublicKey, shares: bigint, minOut: bigint, source: RedeemSource, depositAddress: PublicKey): TransactionInstruction[] => {
+  const ownerUsdc = ata(owner, v.usdcMint);
+  const depositUsdc = ata(depositAddress, v.usdcMint);
+  return [
+    createAtaIdempotentIx(owner, owner, v.usdcMint),
+    ...redeemIxs(v, owner, ownerUsdc, shares, minOut, source),
+    createAtaIdempotentIx(owner, depositAddress, v.usdcMint),
+    transferCheckedIx(ownerUsdc, v.usdcMint, depositUsdc, owner, minOut),
+  ];
+};
+
+/** SPL Token TransferChecked (opcode 12) for USDC. */
+export const transferCheckedIx = (from: PublicKey, mint: PublicKey, to: PublicKey, authority: PublicKey, amount: bigint) => {
+  const data = Buffer.alloc(10);
+  data[0] = 12;
+  data.writeBigUInt64LE(amount, 1);
+  data[9] = USDC_DECIMALS;
+  return new TransactionInstruction({
+    programId: TOKEN_PROGRAM_ID,
+    keys: [
+      { pubkey: from, isSigner: false, isWritable: true },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: to, isSigner: false, isWritable: true },
+      { pubkey: authority, isSigner: true, isWritable: false },
+    ],
+    data,
+  });
+};
