@@ -31,7 +31,7 @@ Reproduce it: `cargo test --manifest-path programs/landfall/Cargo.toml --test ev
 | Transaction | Compute units |
 |---|---|
 | deposit | 16,474 |
-| create the share account + deposit | 36,653 |
+| create the share account + deposit | 39,653 |
 | deposit while both strategies hold funds | 17,428 |
 | sweep an inbox (creates the share account) | 46,393 |
 | refresh_reserve + allocate into Kamino | 85,856 |

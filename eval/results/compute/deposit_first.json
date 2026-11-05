@@ -1,5 +1,5 @@
 {
   "instruction": "deposit_first",
   "transaction": "create the share account + deposit",
-  "compute_units": 38153
+  "compute_units": 39653
 }

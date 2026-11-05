@@ -27,7 +27,10 @@ fn init_seeds_dead_shares() {
 #[test]
 fn deposit_mints_at_nav() {
     let mut env = Env::new();
-    let alice = user(&mut env, 25_000_000);
+    // fixed key so the recorded compute units don't depend on the ATA bump search
+    let alice = Keypair::new_from_array([7u8; 32]);
+    env.svm.airdrop(&alice.pubkey(), 1_000_000_000).unwrap();
+    env.fund_usdc(&alice.pubkey(), 25_000_000);
     let create = env.create_ata_ix(&alice.pubkey(), &alice.pubkey(), &env.share_mint);
     let ix = env.deposit_ix(&alice.pubkey(), &alice.pubkey(), 25_000_000);
     let cu = env.ok(&[create, ix], &[&alice]);
@@ -131,7 +134,7 @@ fn inbox_is_owner_scoped_and_idempotent() {
 fn sweep_pays_fee_and_mints_to_owner() {
     let mut env = Env::new();
     let keeper = user(&mut env, 0);
-    let owner = Pubkey::new_unique();
+    let owner = Keypair::new_from_array([9u8; 32]).pubkey();
     env.ok(&[env.open_inbox_ix(&keeper.pubkey(), &owner)], &[&keeper]);
     // a persistent deposit address delivers 12.5 USDC to the inbox
     let inbox = inbox_pda(&env.vault, &owner);
