@@ -11,6 +11,7 @@ The line between what runs for real and what is a simulation, part by part.
 | Vault numbers on `/vault` and the landing page | Read from chain on every request (NAV, shares, allocation, Kamino reserve limits) | — |
 | APYs | Kamino's and Jupiter's public APIs, cached for 5 minutes | — |
 | Landing eval (`eval/results/landing.json`) | Real mainnet account snapshots of Kamino, Jupiter Lend and USDC, real program binaries, real transactions in LiteSVM | Each adverse condition is one patched byte range of a snapshot (for example the reserve's deposit limit set to its current liquidity). The direct recipe is the documented Kamino bridge-in, rebuilt as the same steps. |
+| Mainnet-fork run (`scripts/fork.sh`) | The reproducible program binary on a surfpool fork of mainnet, with Kamino, Jupiter Lend and USDC accounts fetched live; the TypeScript SDK and keeper exactly as deployed | USDC balances are set with surfpool's `surfnet_setTokenAccount`; the Aurora side (1Click payout, intermediary signing) is played by local keys running the same steps |
 | Program tests | LiteSVM with the Kamino and Jupiter Lend programs dumped from mainnet | Token balances are written directly where a test needs a starting state |
 | Landing-page hero | Chain list, address formats, transfer requirements and the vault split | Sample addresses (labelled "sample") and arrival times (labelled "illustrative"); a fired deposit replaces them with the real one |
 

@@ -1,0 +1,56 @@
+{
+  "ranAt": "2026-11-05T01:45:52.463Z",
+  "rpc": "surfpool mainnet fork",
+  "results": [
+    {
+      "step": "init_vault (seed 1 USDC)",
+      "cu": 44127,
+      "signature": "5JSyo5ts5nMCSBrCQS2LmHzqjmY17XFz5WiLXwXxHn8mKtQrdY1oTcEfhtrEAjgiuvjPbjekVHoZM51XriWh5kqR"
+    },
+    {
+      "step": "configure_kamino + configure_jlend",
+      "cu": 34499,
+      "signature": "3rwb4mZgNNn23ZNGcJWfnwPbmoBf8ecuD4jdw87mV2Adr9h8NqG5qD3GzpiXT2bVAu3Nfz9QbcwJ7ZHb1i98nTWR"
+    },
+    {
+      "step": "set_weights 60/40 + params",
+      "cu": 2171,
+      "signature": "2LPHm8m2vPJ8ReqhFkx2iqPmozMfPrWrbrC5Wm3hPfGGqHrqXQ82FTJphgsDdxCVruoUzHiTHbqyLGs74Uma47bm"
+    },
+    {
+      "step": "wallet deposit 100 USDC",
+      "cu": 29760,
+      "signature": "5DqpRaFwhA7t9e9qhM7og8bxjFUakjC3vpJtriYE46g5SagnQyu5Vpt3sePJwX5TD941ofwjcgQrCxYkzf2Etn6r"
+    },
+    {
+      "step": "bridge-in landing (IC steps, {MIN_AMOUNT_OUT})",
+      "cu": 20760,
+      "signature": "61k8kWhgePeJ6dvmsAaHufdaKS7mAvqDq2XLDBipvQYRyzviLfi8FS62UMFgksPrfHCvhcWx4RFybXqPiZAJXNFD"
+    },
+    {
+      "step": "open_inbox (keeper pays rent)",
+      "cu": 27042,
+      "signature": "XtZ12hvhADMwYB1fs9g71vpbKVTxJRQRhjemxjoaYbxH6VcPqH4v3tD2QgeKG5X7SGgMQuQeANFyAroKwNUsJaG"
+    },
+    {
+      "step": "out-operation (IC steps → {DEPOSIT_ADDRESS})",
+      "cu": 22506,
+      "signature": "5GHa9jHvtrReni13bTtrFAZ7MgoBVdbqZAFjW3KTFsgTMC3haXXBHYMMdRHFkDyQVc8HiyHkS1EbQ7BsxfnsjwGs"
+    },
+    {
+      "step": "steps-only withdraw to a Solana address",
+      "cu": 80430,
+      "signature": "LXX7QP8XKhmB22wQ3Qmefxumpk3knN7FyJdBy97LyC7qX2yxrLVa6NBnE9egTKA8xixc3F8FLCrDZ3FwQKakNrr"
+    },
+    {
+      "step": "swap-out (one tx: redeem + pay 1Click)",
+      "cu": 75026,
+      "signature": "3Xbpf5zP2MwPTZaqQ8GQiB5aAw7Yi59ohWFQcPk5SUngs1HQCjJnCv74pmF9BKX4okoQag5ZTQshdM5nbRPYJx5E"
+    },
+    {
+      "step": "finish into vault (steps-only recovery)",
+      "cu": 21136,
+      "signature": "2SU88Qy9UiumBPNRa6gEAkgTqGUtfe7oZKQygYYjZRNdH7wkH57N3jejSgGzzFGywQueoyoXbkHkNavFsd5MSdZJ"
+    }
+  ]
+}

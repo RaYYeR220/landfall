@@ -125,6 +125,7 @@ bash scripts/verifiable-build.sh                     # the deployed build, in Do
 cargo test --manifest-path programs/landfall/Cargo.toml   # program tests + landing eval
 pnpm --filter @landfall/sdk test                     # SDK tests
 node scripts/render-results.mjs                      # refresh the numbers in the docs
+bash scripts/fork.sh                                 # every flow on a mainnet fork (surfpool in Docker)
 cp apps/web/.env.example apps/web/.env.local         # then fill it in
 pnpm --filter @landfall/web dev
 ```

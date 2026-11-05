@@ -17,6 +17,7 @@ Tiers:
 | Landing never calls a lending protocol | REPRODUCIBLE | `programs/landfall/src/ix/landing.rs` (`deposit` has no CPI besides SPL Token) | read the instruction; `core.rs` tests |
 | A zero amount, a dust amount that would mint 0 shares, and a written-off strategy are all no-ops, never reverts | REPRODUCIBLE | `core.rs`: `zero_deposit_is_noop`, `dust_deposit_stays_with_depositor`, `write_off_pauses_landings_without_reverting` | `cargo test … --test core` |
 | Bridge-in steps pass Aurora's own step guards and use `{MIN_AMOUNT_OUT}` | REPRODUCIBLE | `packages/sdk/test/sdk.test.ts` uses `guards` from `@aurora-is-near/intents-connect` | `pnpm --filter @landfall/sdk test` |
+| Every flow works end to end against live Kamino and Jupiter Lend state: wallet deposit, Intents Connect bridge-in steps, inbox sweep and keeper allocation, out-operation, steps-only withdrawal, Swap API payout, recovery | REPRODUCIBLE | `eval/results/fork-e2e.json` (mainnet fork; Intents Connect steps encoded the way the Aurora backend encodes them) | `bash scripts/fork.sh` |
 | The Intents Connect API accepts Landfall's steps | VERIFIED-LIVE | a dry create of a steps-only execution returned `OPERATION_PENDING` | see PROOF.md |
 
 ## Vault
