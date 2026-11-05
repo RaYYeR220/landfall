@@ -11,7 +11,7 @@ docker rm -f "$NAME" >/dev/null 2>&1 || true
 MSYS_NO_PATHCONV=1 docker run -d --name "$NAME" -p 8899:8899 -p 8900:8900 surfpool/surfpool:latest \
   start --network mainnet --host 0.0.0.0 --no-tui --no-studio --no-deploy \
   --airdrop "$(solana address -k "$ADMIN_KEYPAIR")" --airdrop "$(solana address -k "$KEEPER_KEYPAIR")" >/dev/null
-trap 'docker rm -f "$NAME" >/dev/null 2>&1 || true' EXIT
+[ -n "${KEEP:-}" ] || trap 'docker rm -f "$NAME" >/dev/null 2>&1 || true' EXIT
 for _ in $(seq 1 60); do solana cluster-version --url "$RPC" >/dev/null 2>&1 && break; sleep 1; done
 [ -f "$ROOT/target/verifiable/landfall.so" ] || bash "$ROOT/scripts/verifiable-build.sh"
 solana program deploy "$ROOT/target/verifiable/landfall.so" --program-id "$PROGRAM_KEYPAIR" \
