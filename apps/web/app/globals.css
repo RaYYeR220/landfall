@@ -1,1 +1,156 @@
 @import "tailwindcss";
+
+/* Landfall tokens: dark ground, one ice accent; colour lives in the object. */
+:root {
+  --bg: #0a0b0d;
+  --bg-2: #0d0e11;
+  --bg-3: #121418;
+  --ink: #e9ebee;
+  --ink-2: rgba(233, 235, 238, 0.7);
+  --ink-3: rgba(233, 235, 238, 0.48);
+  --ink-4: rgba(233, 235, 238, 0.3);
+  --line: rgba(233, 235, 238, 0.085);
+  --line-2: rgba(233, 235, 238, 0.15);
+  --acc: #5fd4f4;
+  --acc-dim: rgba(95, 212, 244, 0.16);
+  --acc-ink: #04232b;
+  --ok: #4ad6a0;
+  --warn: #f2b84b;
+  --bad: #ff7a6b;
+  --r-pill: 999px;
+  --r-hero: 28px;
+  --r-card: 18px;
+  --r-field: 14px;
+  --wrap: 1240px;
+  --gut: 24px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --sans: "Satoshi", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-acc: var(--acc);
+  --color-acc-dim: var(--acc-dim);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --font-sans: var(--sans);
+  --font-mono: var(--mono);
+  --radius-pill: var(--r-pill);
+  --radius-card: var(--r-card);
+  --radius-field: var(--r-field);
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  background: var(--bg);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.wrap {
+  width: min(var(--wrap), calc(100% - 2 * var(--gut)));
+  margin-inline: auto;
+}
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.09'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+}
+.mono {
+  font-family: var(--mono);
+}
+.hair {
+  border: 1px solid var(--line);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: var(--r-pill);
+  font-weight: 500;
+  font-size: 15px;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease), opacity 0.2s;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+.btn-primary:hover:not(:disabled) {
+  background: #fff;
+}
+.btn-ghost {
+  border: 1px solid var(--line-2);
+  color: var(--ink);
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--ink-3);
+}
+.btn-acc {
+  background: var(--acc);
+  color: var(--acc-ink);
+}
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+@media (max-width: 640px) {
+  :root {
+    --gut: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
