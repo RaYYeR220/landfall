@@ -13,6 +13,9 @@ pub const SHARE_DECIMALS: u8 = 6;
 pub const VIRTUAL_SHARES: u128 = 1_000_000;
 pub const VIRTUAL_ASSETS: u128 = 1_000_000;
 pub const BPS: u128 = 10_000;
+/// Upper bound on the minimum sweep, so the curator can't strand inbox funds
+/// by raising it out of reach (5 USDC; Aurora's own minimum is 1 USD).
+pub const MAX_MIN_SWEEP: u64 = 5_000_000;
 
 pub const SOURCE_IDLE: u8 = 0;
 pub const SOURCE_KAMINO: u8 = 1;

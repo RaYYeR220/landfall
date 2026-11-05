@@ -142,7 +142,9 @@ pub fn set_params(accounts: &mut [AccountView], data: &[u8]) -> ProgramResult {
     require(buffer as u128 <= BPS, LandfallError::InvalidParams)?;
     v.idle_buffer_bps = buffer;
     v.sweep_fee = read_u64(data, 2)?;
-    v.min_sweep = read_u64(data, 10)?;
+    let min_sweep = read_u64(data, 10)?;
+    require(min_sweep <= MAX_MIN_SWEEP, LandfallError::InvalidParams)?;
+    v.min_sweep = min_sweep;
     v.store(vault_acc)
 }
 

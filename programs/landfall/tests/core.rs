@@ -160,6 +160,16 @@ fn sweep_fee_is_capped_at_one_percent() {
 }
 
 #[test]
+fn curator_cannot_raise_min_sweep_out_of_reach() {
+    let mut env = Env::new();
+    let admin = env.admin.insecure_clone();
+    let too_high = env.curator_ix(lc::instruction::SetParams { idle_buffer_bps: 1_000, sweep_fee: 0, min_sweep: 5_000_001 }.data());
+    assert!(env.send(&[too_high], &[&admin]).is_err());
+    let at_cap = env.curator_ix(lc::instruction::SetParams { idle_buffer_bps: 1_000, sweep_fee: 0, min_sweep: 5_000_000 }.data());
+    env.ok(&[at_cap], &[&admin]);
+}
+
+#[test]
 fn sweep_below_min_errors_and_moves_nothing() {
     let mut env = Env::new();
     let keeper = user(&mut env, 0);
