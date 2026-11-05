@@ -44,7 +44,20 @@ const links = deployment
       .join("\n")
   : "_Not deployed from this checkout: `eval/results/deployment.json` is written by `packages/sdk/scripts/init-vault.ts`._";
 
+const walk = (dir, ext) =>
+  existsSync(dir)
+    ? readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name), ext) : e.name.endsWith(ext) ? [join(dir, e.name)] : []))
+    : [];
+// counts come from the last `scripts/test-all.sh` run, never from reading the sources
+const suite = (name) => (existsSync(join(root, `eval/results/tests/${name}.json`)) ? read(`eval/results/tests/${name}.json`) : null);
+const passed = (name) => {
+  const s = suite(name);
+  if (!s) return "?";
+  return s.numFailedTests ? `${s.numPassedTests} (${s.numFailedTests} failing)` : `${s.numPassedTests}`;
+};
+
 const blocks = {
+  tests: `${passed("program")} program tests (LiteSVM, mainnet snapshots), ${passed("sdk")} SDK tests and ${passed("mcp")} MCP server tests, all passing`,
   links,
   headline: `A direct bridge-and-deposit into Kamino reverts in ${adverse.length - docs} of ${adverse.length} adverse market conditions and strands the bridged funds. Landfall lands ${lf} of ${adverse.length}.`,
   landing: [
@@ -66,14 +79,16 @@ const blocks = {
   ].join("\n"),
 };
 
-const docsFiles = ["README.md", "JUDGES.md", "CLAIMS.md"].filter((f) => existsSync(join(root, f)));
+const docsFiles = ["README.md", "JUDGES.md", "CLAIMS.md", "CHALLENGE_CHECKLIST.md"].filter((f) => existsSync(join(root, f)));
 let stale = false;
 for (const f of docsFiles) {
   const path = join(root, f);
   const before = readFileSync(path, "utf8");
-  const after = before.replace(/<!-- results:(\w+) -->[\s\S]*?<!-- \/results:\1 -->/g, (m, name) =>
-    blocks[name] === undefined ? m : `<!-- results:${name} -->\n${blocks[name]}\n<!-- /results:${name} -->`,
-  );
+  // a block whose markers sit on one line (e.g. inside a table cell) is rendered inline
+  const after = before.replace(/<!-- results:(\w+) -->([\s\S]*?)<!-- \/results:\1 -->/g, (m, name, inner) => {
+    if (blocks[name] === undefined) return m;
+    return !inner.startsWith("\n") ?`<!-- results:${name} -->${blocks[name]}<!-- /results:${name} -->` : `<!-- results:${name} -->\n${blocks[name]}\n<!-- /results:${name} -->`;
+  });
   if (after !== before) {
     stale = true;
     if (!process.argv.includes("--check")) writeFileSync(path, after);

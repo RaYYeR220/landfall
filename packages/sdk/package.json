@@ -10,7 +10,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --reporter=default --reporter=json --outputFile.json=../../eval/results/tests/sdk.json",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
