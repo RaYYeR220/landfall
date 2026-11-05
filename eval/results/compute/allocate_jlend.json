@@ -1,0 +1,5 @@
+{
+  "instruction": "allocate_jlend",
+  "transaction": "allocate into Jupiter Lend",
+  "compute_units": 76567
+}

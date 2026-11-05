@@ -49,6 +49,7 @@ fn allocate_moves_spare_idle_into_jupiter_lend() {
     let amount = 80_000_000;
     let cu = env.ok(&[env.allocate_jlend_ix(&keeper.pubkey(), amount)], &[&keeper]);
     println!("allocate_jlend CU: {cu}");
+    record_cu("allocate_jlend", "allocate into Jupiter Lend", cu);
     let ftokens = env.token_balance(&ata(&env.vault, &J_FMINT));
     assert!(ftokens > 0);
     let valued = lending_view(&env).assets_for_shares(ftokens).unwrap();
@@ -85,6 +86,7 @@ fn redeem_pulls_shortfall_from_jupiter_lend() {
     let dest = ata(&alice.pubkey(), &USDC);
     let cu = env.ok(&[env.redeem_via_jlend_ix(&alice.pubkey(), &dest, shares, 99_990_000)], &[&alice]);
     println!("redeem_via_jlend CU: {cu}");
+    record_cu("redeem_via_jlend", "withdraw through Jupiter Lend", cu);
     let got = env.token_balance(&dest);
     assert!(got >= 99_990_000 && got <= 100_000_000, "got {got}");
 }

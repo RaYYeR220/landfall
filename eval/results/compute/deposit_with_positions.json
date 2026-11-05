@@ -1,0 +1,5 @@
+{
+  "instruction": "deposit_with_positions",
+  "transaction": "deposit while both strategies hold funds",
+  "compute_units": 17428
+}

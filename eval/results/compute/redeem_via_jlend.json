@@ -1,0 +1,5 @@
+{
+  "instruction": "redeem_via_jlend",
+  "transaction": "withdraw through Jupiter Lend",
+  "compute_units": 74006
+}

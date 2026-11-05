@@ -57,6 +57,7 @@ fn allocate_moves_spare_idle_into_kamino_at_kamino_price() {
     let amount = 90_000_000;
     let cu = env.ok(&env.allocate_kamino_ixs(&keeper.pubkey(), amount), &[&keeper]);
     println!("refresh_reserve + allocate_kamino CU: {cu}");
+    record_cu("allocate_kamino", "refresh_reserve + allocate into Kamino", cu);
     assert!(cu < 200_000);
 
     let minted = env.token_balance(&ata(&env.vault, &K_CMINT));
@@ -138,6 +139,7 @@ fn redeem_pulls_shortfall_from_kamino() {
     assert!(env.send(&[env.redeem_ix(&alice.pubkey(), &dest, shares, 0)], &[&alice]).is_err());
     let cu = env.ok(&env.redeem_via_kamino_ixs(&alice.pubkey(), &dest, shares, 99_990_000), &[&alice]);
     println!("refresh_reserve + redeem_via_kamino CU: {cu}");
+    record_cu("redeem_via_kamino", "refresh_reserve + withdraw through Kamino", cu);
     let got = env.token_balance(&dest);
     assert!(got >= 99_990_000 && got <= 100_000_000, "got {got}");
     assert_eq!(env.token_balance(&ata(&alice.pubkey(), &env.share_mint)), 0);
@@ -176,6 +178,7 @@ fn deposit_with_live_kamino_valuation_cu() {
     env.ok(&[create], &[&bob]);
     let cu = env.ok(&[env.deposit_ix(&bob.pubkey(), &bob.pubkey(), 5_000_000)], &[&bob]);
     println!("deposit (live Kamino valuation) CU: {cu}");
+    record_cu("deposit_with_positions", "deposit while both strategies hold funds", cu);
     assert!(cu < 40_000);
     // Bob's shares are priced at NAV: value of his shares ≈ 5 USDC
     let _ = Pubkey::default();

@@ -1,0 +1,5 @@
+{
+  "instruction": "redeem_via_kamino",
+  "transaction": "refresh_reserve + withdraw through Kamino",
+  "compute_units": 76584
+}

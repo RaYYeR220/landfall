@@ -1,0 +1,5 @@
+{
+  "instruction": "sweep_inbox",
+  "transaction": "sweep an inbox (creates the share account)",
+  "compute_units": 46393
+}

@@ -38,6 +38,7 @@ fn deposit_mints_at_nav() {
     assert_eq!(v.landed_total, 25_000_000);
     assert_eq!(v.landed_count, 1);
     println!("deposit+create_ata CU: {cu}");
+    record_cu("deposit_first", "create the share account + deposit", cu);
 }
 
 #[test]
@@ -48,6 +49,7 @@ fn deposit_cu_is_small() {
     env.ok(&[create], &[&alice]);
     let cu = env.ok(&[env.deposit_ix(&alice.pubkey(), &alice.pubkey(), 5_000_000)], &[&alice]);
     println!("deposit CU: {cu}");
+    record_cu("deposit", "deposit", cu);
     assert!(cu < 40_000, "deposit used {cu} CU");
 }
 
@@ -136,6 +138,7 @@ fn sweep_pays_fee_and_mints_to_owner() {
     env.set_token(&ata(&inbox, &USDC), &USDC, &inbox, 12_500_000);
     let cu = env.ok(&[env.sweep_ix(&keeper.pubkey(), &owner)], &[&keeper]);
     println!("sweep CU (incl. share ATA create): {cu}");
+    record_cu("sweep_inbox", "sweep an inbox (creates the share account)", cu);
     assert_eq!(env.token_balance(&ata(&inbox, &USDC)), 0);
     assert_eq!(env.token_balance(&ata(&keeper.pubkey(), &USDC)), 10_000); // fee 0.01 USDC
     assert_eq!(shares_of(&env, &owner), 12_490_000);

@@ -356,3 +356,16 @@ impl Env {
 pub fn instructions_sysvar() -> Pubkey {
     lc::INSTRUCTIONS_SYSVAR
 }
+
+/// Writes one compute-unit measurement to `eval/results/compute/<name>.json`.
+pub fn record_cu(name: &str, what: &str, cu: u64) {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../eval/results/compute");
+    std::fs::create_dir_all(&dir).unwrap();
+    let body = format!("{{
+  \"instruction\": \"{name}\",
+  \"transaction\": \"{what}\",
+  \"compute_units\": {cu}
+}}
+");
+    std::fs::write(dir.join(format!("{name}.json")), body).unwrap();
+}

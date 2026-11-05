@@ -1,0 +1,5 @@
+{
+  "instruction": "allocate_kamino",
+  "transaction": "refresh_reserve + allocate into Kamino",
+  "compute_units": 85856
+}
