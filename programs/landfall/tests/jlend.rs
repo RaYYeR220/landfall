@@ -19,8 +19,8 @@ fn deposit(env: &mut Env, who: &Keypair, amount: u64) {
     env.ok(&[create, ix], &[who]);
 }
 
-fn lending_view(env: &Env) -> landfall::strategies::jlend::LendingView {
-    landfall::strategies::jlend::LendingView::parse_data(&env.svm.get_account(&J_LENDING).unwrap().data).unwrap()
+fn lending_view(env: &Env) -> lc::strategies::jlend::LendingView {
+    lc::strategies::jlend::LendingView::parse_data(&env.svm.get_account(&J_LENDING).unwrap().data).unwrap()
 }
 
 fn setup(k_bps: u16, j_bps: u16) -> (Env, Keypair) {
@@ -38,7 +38,7 @@ fn lending_snapshot_parses() {
     let v = lending_view(&env);
     assert_eq!(v.mint, USDC);
     assert_eq!(v.ftoken_mint, J_FMINT);
-    assert!(v.token_exchange_price as u128 > landfall::strategies::jlend::EXCHANGE_PRICE_PRECISION);
+    assert!(v.token_exchange_price as u128 > lc::strategies::jlend::EXCHANGE_PRICE_PRECISION);
 }
 
 #[test]
@@ -60,7 +60,7 @@ fn allocate_moves_spare_idle_into_jupiter_lend() {
 fn curator_split_sixty_forty() {
     let (mut env, keeper) = setup(6_000, 4_000);
     env.ok(
-        &[env.curator_ix(anchor_lang::InstructionData::data(&landfall::instruction::SetParams { idle_buffer_bps: 0, sweep_fee: 10_000, min_sweep: 1_000_000 }))],
+        &[env.curator_ix(anchor_lang::InstructionData::data(&lc::instruction::SetParams { idle_buffer_bps: 0, sweep_fee: 10_000, min_sweep: 1_000_000 }))],
         &[&env.admin.insecure_clone()],
     );
     let alice = user(&mut env);

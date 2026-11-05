@@ -1,33 +1,41 @@
-use anchor_lang::prelude::*;
+use pinocchio::error::ProgramError;
 
-#[error_code]
+/// Custom errors, numbered from 6000 like Anchor programs so clients that
+/// map Anchor error codes keep working.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u32)]
 pub enum LandfallError {
-    #[msg("Signer is not allowed to perform this action")]
-    Unauthorized,
-    #[msg("Invalid vault parameters")]
+    Unauthorized = 6000,
     InvalidParams,
-    #[msg("Inbox balance is below the minimum sweep amount")]
     BelowMinSweep,
-    #[msg("Vault is paused for allocations")]
     Paused,
-    #[msg("Strategy is not configured or not enabled")]
     StrategyDisabled,
-    #[msg("Allocation would exceed the strategy target weight or cap")]
     AllocationExceedsTarget,
-    #[msg("Not enough idle liquidity above the buffer")]
     InsufficientIdle,
-    #[msg("Not enough liquidity in the selected source to cover the redemption")]
     InsufficientLiquidity,
-    #[msg("Redeemed amount is below the requested minimum")]
     SlippageExceeded,
-    #[msg("A strategy account does not match the vault configuration")]
     InvalidStrategyAccount,
-    #[msg("Strategy accounts must be provided and valid for this instruction")]
     StrategyValuationUnavailable,
-    #[msg("Arithmetic overflow")]
     MathOverflow,
-    #[msg("Unknown redemption source")]
     InvalidSource,
-    #[msg("A strategy is written off; landings resume once the curator resolves it")]
     VaultInMaintenance,
+    InvalidAccount,
+    InvalidInstruction,
+}
+
+impl From<LandfallError> for ProgramError {
+    fn from(e: LandfallError) -> Self {
+        ProgramError::Custom(e as u32)
+    }
+}
+
+pub type Result<T = ()> = core::result::Result<T, ProgramError>;
+
+#[inline(always)]
+pub fn require(cond: bool, e: LandfallError) -> Result {
+    if cond {
+        Ok(())
+    } else {
+        Err(e.into())
+    }
 }

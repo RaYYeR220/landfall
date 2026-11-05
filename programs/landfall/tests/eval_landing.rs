@@ -49,7 +49,7 @@ fn fee_transfer_ix(intermediary: &Pubkey, fee_payer: &Pubkey) -> Instruction {
 }
 
 fn docs_recipe_ixs(intermediary: &Pubkey, amount: u64) -> Vec<Instruction> {
-    let mut data = landfall::strategies::kamino::IX_DEPOSIT_RESERVE_LIQUIDITY.to_vec();
+    let mut data = lc::strategies::kamino::IX_DEPOSIT_RESERVE_LIQUIDITY.to_vec();
     data.extend_from_slice(&amount.to_le_bytes());
     let deposit = Instruction {
         program_id: KLEND,
@@ -65,7 +65,7 @@ fn docs_recipe_ixs(intermediary: &Pubkey, amount: u64) -> Vec<Instruction> {
             AccountMeta::new(ata(intermediary, &K_CMINT), false),
             AccountMeta::new_readonly(TOKEN_PROGRAM, false),
             AccountMeta::new_readonly(TOKEN_PROGRAM, false),
-            AccountMeta::new_readonly(landfall::INSTRUCTIONS_SYSVAR, false),
+            AccountMeta::new_readonly(lc::INSTRUCTIONS_SYSVAR, false),
         ],
         data,
     };
@@ -137,7 +137,7 @@ fn scenarios() -> Vec<Scenario> {
             id: "deposit_limit_reached",
             what: "Kamino USDC reserve is at its deposit limit when the bridged funds arrive",
             adverse: Box::new(|env| {
-                let v = landfall::strategies::kamino::ReserveView::parse_data(&env.svm.get_account(&K_RESERVE).unwrap().data).unwrap();
+                let v = lc::strategies::kamino::ReserveView::parse_data(&env.svm.get_account(&K_RESERVE).unwrap().data).unwrap();
                 let total = v.total_liquidity as u64;
                 env.patch_account(&K_RESERVE, |a| a.data[5016..5024].copy_from_slice(&total.to_le_bytes()));
             }),

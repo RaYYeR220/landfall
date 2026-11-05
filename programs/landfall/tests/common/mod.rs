@@ -3,6 +3,8 @@
 //! address; strategy tests additionally load mainnet snapshots of Kamino and
 //! Jupiter Lend (see `scripts/dump-fixtures.sh`).
 
+pub mod lc;
+
 use std::path::PathBuf;
 
 use anchor_lang::{
@@ -19,8 +21,8 @@ use solana_signer::Signer;
 use solana_transaction::versioned::VersionedTransaction;
 
 pub const USDC: Pubkey = anchor_lang::prelude::pubkey!("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-pub const TOKEN_PROGRAM: Pubkey = anchor_spl::token::ID;
-pub const ATA_PROGRAM: Pubkey = anchor_spl::associated_token::ID;
+pub const TOKEN_PROGRAM: Pubkey = anchor_lang::prelude::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+pub const ATA_PROGRAM: Pubkey = anchor_lang::prelude::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 pub const SYSTEM_PROGRAM: Pubkey = anchor_lang::solana_program::system_program::ID;
 
 pub fn fixtures_dir() -> PathBuf {
@@ -32,17 +34,17 @@ pub fn ata(owner: &Pubkey, mint: &Pubkey) -> Pubkey {
 }
 
 pub fn vault_pda(mint: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&[landfall::VAULT_SEED, mint.as_ref()], &landfall::id()).0
+    Pubkey::find_program_address(&[lc::VAULT_SEED, mint.as_ref()], &lc::id()).0
 }
 pub fn share_mint_pda(vault: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&[landfall::SHARES_SEED, vault.as_ref()], &landfall::id()).0
+    Pubkey::find_program_address(&[lc::SHARES_SEED, vault.as_ref()], &lc::id()).0
 }
 pub fn inbox_pda(vault: &Pubkey, owner: &Pubkey) -> Pubkey {
-    Pubkey::find_program_address(&[landfall::INBOX_SEED, vault.as_ref(), owner.as_ref()], &landfall::id()).0
+    Pubkey::find_program_address(&[lc::INBOX_SEED, vault.as_ref(), owner.as_ref()], &lc::id()).0
 }
 
 pub fn program_data_address() -> Pubkey {
-    Pubkey::find_program_address(&[landfall::id().as_ref()], &landfall::BPF_UPGRADEABLE_LOADER).0
+    Pubkey::find_program_address(&[lc::id().as_ref()], &lc::BPF_UPGRADEABLE_LOADER).0
 }
 
 /// ProgramData header (loader state 3) naming `authority` as upgrade authority.
@@ -53,7 +55,7 @@ pub fn set_upgrade_authority(svm: &mut LiteSVM, authority: &Pubkey) {
     d[13..45].copy_from_slice(authority.as_ref());
     svm.set_account(
         program_data_address(),
-        Account { lamports: 1_000_000_000, data: d, owner: landfall::BPF_UPGRADEABLE_LOADER, executable: false, rent_epoch: 0 },
+        Account { lamports: 1_000_000_000, data: d, owner: lc::BPF_UPGRADEABLE_LOADER, executable: false, rent_epoch: 0 },
     )
     .unwrap();
 }
@@ -107,7 +109,7 @@ impl Env {
     pub fn bare() -> (LiteSVM, Keypair, Keypair) {
         let mut svm = LiteSVM::new();
         let so = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../target/deploy/landfall.so");
-        svm.add_program_from_file(landfall::id(), so).unwrap();
+        svm.add_program_from_file(lc::id(), so).unwrap();
         let admin = Keypair::new();
         let usdc_authority = Keypair::new();
         svm.airdrop(&admin.pubkey(), 100_000_000_000).unwrap();
@@ -189,14 +191,14 @@ impl Env {
         u64::from_le_bytes(a.data[36..44].try_into().unwrap())
     }
 
-    pub fn vault_state(&self) -> landfall::state::Vault {
+    pub fn vault_state(&self) -> lc::state::Vault {
         let a = self.svm.get_account(&self.vault).unwrap();
-        landfall::state::Vault::try_deserialize(&mut a.data.as_slice()).unwrap()
+        lc::state::Vault::try_deserialize(&mut a.data.as_slice()).unwrap()
     }
 
-    pub fn inbox_state(&self, owner: &Pubkey) -> landfall::state::Inbox {
+    pub fn inbox_state(&self, owner: &Pubkey) -> lc::state::Inbox {
         let a = self.svm.get_account(&inbox_pda(&self.vault, owner)).unwrap();
-        landfall::state::Inbox::try_deserialize(&mut a.data.as_slice()).unwrap()
+        lc::state::Inbox::try_deserialize(&mut a.data.as_slice()).unwrap()
     }
 
     pub fn init_vault(&mut self, seed: u64) {
@@ -208,12 +210,12 @@ impl Env {
     pub fn init_vault_ix(&self, admin: &Pubkey, seed: u64) -> Instruction {
         let admin = *admin;
         Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::InitVault {
-                params: landfall::InitVaultParams { curator: admin, idle_buffer_bps: 1_000, sweep_fee: 10_000, min_sweep: 1_000_000, seed_amount: seed },
+            lc::id(),
+            &lc::instruction::InitVault {
+                params: lc::InitVaultParams { curator: admin, idle_buffer_bps: 1_000, sweep_fee: 10_000, min_sweep: 1_000_000, seed_amount: seed },
             }
             .data(),
-            landfall::accounts::InitVault {
+            lc::accounts::InitVault {
                 admin,
                 usdc_mint: USDC,
                 vault: self.vault,
@@ -258,7 +260,7 @@ impl Env {
     }
 
     pub fn deposit_ix(&self, depositor: &Pubkey, owner: &Pubkey, amount: u64) -> Instruction {
-        let mut metas = landfall::accounts::Deposit {
+        let mut metas = lc::accounts::Deposit {
             depositor: *depositor,
             depositor_usdc: ata(depositor, &USDC),
             owner: *owner,
@@ -271,15 +273,15 @@ impl Env {
         }
         .to_account_metas(None);
         metas.extend(self.nav_accounts());
-        Instruction::new_with_bytes(landfall::id(), &landfall::instruction::Deposit { amount }.data(), metas)
+        Instruction::new_with_bytes(lc::id(), &lc::instruction::Deposit { amount }.data(), metas)
     }
 
     pub fn open_inbox_ix(&self, payer: &Pubkey, owner: &Pubkey) -> Instruction {
         let inbox = inbox_pda(&self.vault, owner);
         Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::OpenInbox {}.data(),
-            landfall::accounts::OpenInbox {
+            lc::id(),
+            &lc::instruction::OpenInbox {}.data(),
+            lc::accounts::OpenInbox {
                 payer: *payer,
                 vault: self.vault,
                 usdc_mint: USDC,
@@ -296,7 +298,7 @@ impl Env {
 
     pub fn sweep_ix(&self, keeper: &Pubkey, owner: &Pubkey) -> Instruction {
         let inbox = inbox_pda(&self.vault, owner);
-        let mut metas = landfall::accounts::SweepInbox {
+        let mut metas = lc::accounts::SweepInbox {
             keeper: *keeper,
             keeper_usdc: ata(keeper, &USDC),
             vault: self.vault,
@@ -313,12 +315,12 @@ impl Env {
         }
         .to_account_metas(None);
         metas.extend(self.nav_accounts());
-        Instruction::new_with_bytes(landfall::id(), &landfall::instruction::SweepInbox {}.data(), metas)
+        Instruction::new_with_bytes(lc::id(), &lc::instruction::SweepInbox {}.data(), metas)
     }
 
-    pub fn redeem_base(&self, owner: &Pubkey, destination: &Pubkey) -> landfall::accounts::RedeemBase {
+    pub fn redeem_base(&self, owner: &Pubkey, destination: &Pubkey) -> lc::accounts::RedeemBase {
         let n = self.nav_accounts();
-        landfall::accounts::RedeemBase {
+        lc::accounts::RedeemBase {
             owner: *owner,
             owner_shares: ata(owner, &self.share_mint),
             destination: *destination,
@@ -336,21 +338,21 @@ impl Env {
 
     pub fn redeem_ix(&self, owner: &Pubkey, destination: &Pubkey, shares: u64, min_out: u64) -> Instruction {
         Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::Redeem { shares, min_out }.data(),
-            landfall::accounts::Redeem { base: self.redeem_base(owner, destination) }.to_account_metas(None),
+            lc::id(),
+            &lc::instruction::Redeem { shares, min_out }.data(),
+            lc::accounts::Redeem { base: self.redeem_base(owner, destination) }.to_account_metas(None),
         )
     }
 
     pub fn curator_ix(&self, data: Vec<u8>) -> Instruction {
         Instruction::new_with_bytes(
-            landfall::id(),
+            lc::id(),
             &data,
-            landfall::accounts::CuratorOnly { curator: self.admin.pubkey(), vault: self.vault }.to_account_metas(None),
+            lc::accounts::CuratorOnly { curator: self.admin.pubkey(), vault: self.vault }.to_account_metas(None),
         )
     }
 }
 
 pub fn instructions_sysvar() -> Pubkey {
-    landfall::INSTRUCTIONS_SYSVAR
+    lc::INSTRUCTIONS_SYSVAR
 }

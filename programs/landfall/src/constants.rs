@@ -1,26 +1,60 @@
-use anchor_lang::prelude::*;
+use solana_address::{address, Address};
+
+pub const ID: Address = address!("12pHvK6FYFHP748kom4F3AbKcymKGVN2r9n1GtX3zdyZ");
 
 pub const VAULT_SEED: &[u8] = b"vault";
 pub const SHARES_SEED: &[u8] = b"shares";
 pub const INBOX_SEED: &[u8] = b"inbox";
 
-/// Share token decimals (same as USDC).
 pub const SHARE_DECIMALS: u8 = 6;
 
-/// Virtual shares / assets used by the share price formula. Together with the
-/// dead shares seeded at `init_vault` they make donation (inflation) attacks
-/// unprofitable.
+/// Virtual shares / assets of the share price formula; with the dead shares
+/// seeded at `init_vault` they make donation (inflation) attacks unprofitable.
 pub const VIRTUAL_SHARES: u128 = 1_000_000;
 pub const VIRTUAL_ASSETS: u128 = 1_000_000;
-
 pub const BPS: u128 = 10_000;
 
-/// Strategy identifiers used by `redeem` to choose where a shortfall is pulled from.
 pub const SOURCE_IDLE: u8 = 0;
 pub const SOURCE_KAMINO: u8 = 1;
 pub const SOURCE_JLEND: u8 = 2;
 
-pub const KAMINO_LENDING_PROGRAM: Pubkey = pubkey!("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD");
-pub const JUPITER_LEND_PROGRAM: Pubkey = pubkey!("jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9");
-pub const INSTRUCTIONS_SYSVAR: Pubkey = pubkey!("Sysvar1nstructions1111111111111111111111111");
-pub const BPF_UPGRADEABLE_LOADER: Pubkey = pubkey!("BPFLoaderUpgradeab1e11111111111111111111111");
+pub const TOKEN_PROGRAM: Address = address!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+pub const ATA_PROGRAM: Address = address!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+pub const SYSTEM_PROGRAM: Address = address!("11111111111111111111111111111111");
+pub const BPF_UPGRADEABLE_LOADER: Address = address!("BPFLoaderUpgradeab1e11111111111111111111111");
+pub const INSTRUCTIONS_SYSVAR: Address = address!("Sysvar1nstructions1111111111111111111111111");
+pub const KAMINO_LENDING_PROGRAM: Address = address!("KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD");
+pub const JUPITER_LEND_PROGRAM: Address = address!("jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9");
+
+// Instruction discriminators: sha256("global:<name>")[..8] (Anchor-compatible wire format).
+pub const IX_INIT_VAULT: [u8; 8] = [0x4d, 0x4f, 0x55, 0x96, 0x21, 0xd9, 0x34, 0x6a];
+pub const IX_SET_CURATOR: [u8; 8] = [0x73, 0x7f, 0xc4, 0xdb, 0xeb, 0xc6, 0x60, 0xfd];
+pub const IX_SET_PARAMS: [u8; 8] = [0x1b, 0xea, 0xb2, 0x34, 0x93, 0x02, 0xbb, 0x8d];
+pub const IX_SET_PAUSED: [u8; 8] = [0x5b, 0x3c, 0x7d, 0xc0, 0xb0, 0xe1, 0xa6, 0xda];
+pub const IX_SET_WEIGHTS: [u8; 8] = [0x19, 0x3a, 0xc1, 0x13, 0xba, 0x54, 0xec, 0xbb];
+pub const IX_SET_STRATEGY_ENABLED: [u8; 8] = [0xa2, 0x9d, 0x9a, 0xe6, 0x2c, 0x06, 0xbc, 0xad];
+pub const IX_CONFIGURE_KAMINO: [u8; 8] = [0x00, 0xb0, 0xf2, 0xb8, 0x1b, 0x9e, 0x90, 0xbb];
+pub const IX_CONFIGURE_JLEND: [u8; 8] = [0x51, 0xe8, 0x12, 0x12, 0x20, 0xac, 0x8c, 0x8d];
+pub const IX_OPEN_INBOX: [u8; 8] = [0xd2, 0xac, 0xbc, 0xa4, 0x04, 0x7a, 0xe7, 0xdf];
+pub const IX_DEPOSIT: [u8; 8] = [0xf2, 0x23, 0xc6, 0x89, 0x52, 0xe1, 0xf2, 0xb6];
+pub const IX_SWEEP_INBOX: [u8; 8] = [0x21, 0xc1, 0xb4, 0x61, 0x31, 0xc3, 0x11, 0x92];
+pub const IX_ALLOCATE_KAMINO: [u8; 8] = [0x3a, 0x83, 0xb1, 0x94, 0xbc, 0x9f, 0x99, 0xff];
+pub const IX_ALLOCATE_JLEND: [u8; 8] = [0x92, 0xd8, 0xe6, 0xa2, 0xed, 0x1a, 0xae, 0x56];
+pub const IX_DEALLOCATE_KAMINO: [u8; 8] = [0x71, 0xc1, 0x50, 0x6d, 0xf3, 0x29, 0xde, 0x8b];
+pub const IX_DEALLOCATE_JLEND: [u8; 8] = [0x47, 0x27, 0xab, 0x66, 0x07, 0x07, 0x6c, 0x9f];
+pub const IX_SYNC_NAV: [u8; 8] = [0x78, 0xb0, 0x3c, 0x5a, 0x2f, 0x58, 0x96, 0x7d];
+pub const IX_REDEEM: [u8; 8] = [0xb8, 0x0c, 0x56, 0x95, 0x46, 0xc4, 0x61, 0xe1];
+pub const IX_REDEEM_VIA_KAMINO: [u8; 8] = [0x08, 0x85, 0x3c, 0x48, 0x2b, 0x68, 0xad, 0x4d];
+pub const IX_REDEEM_VIA_JLEND: [u8; 8] = [0xe5, 0xcc, 0x1a, 0xef, 0x65, 0x8c, 0x73, 0x18];
+
+// Account discriminators: sha256("account:<Name>")[..8].
+pub const ACC_VAULT: [u8; 8] = [0xd3, 0x08, 0xe8, 0x2b, 0x02, 0x98, 0x75, 0x77];
+pub const ACC_INBOX: [u8; 8] = [0x29, 0x78, 0x4c, 0x8b, 0xa2, 0xa2, 0xa6, 0xf4];
+
+// Event discriminators: sha256("event:<Name>")[..8], logged as "Program data:".
+pub const EV_LANDED: [u8; 8] = [0x96, 0x31, 0x36, 0xea, 0x1a, 0xda, 0x82, 0x67];
+pub const EV_LANDING_DEFERRED: [u8; 8] = [0x49, 0xb6, 0xd5, 0x61, 0xc1, 0xab, 0xaf, 0x5e];
+pub const EV_ALLOCATED: [u8; 8] = [0x92, 0x0b, 0xc2, 0x4c, 0x04, 0xdc, 0xe2, 0x2b];
+pub const EV_DEALLOCATED: [u8; 8] = [0x3b, 0x3f, 0xb5, 0x77, 0x61, 0x9e, 0x28, 0x06];
+pub const EV_REDEEMED: [u8; 8] = [0x0e, 0x1d, 0xb7, 0x47, 0x1f, 0xa5, 0x6b, 0x26];
+pub const EV_INBOX_OPENED: [u8; 8] = [0xdc, 0x8e, 0x3a, 0x5d, 0x9d, 0xa0, 0xb3, 0x17];

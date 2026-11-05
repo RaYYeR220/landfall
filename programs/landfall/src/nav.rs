@@ -1,38 +1,33 @@
 //! Net asset value of the vault.
 //!
-//! Strategy valuation accounts are passed as the first four remaining
-//! accounts, in this order:
-//! `[kamino_reserve, vault_kamino_collateral, jlend_lending, vault_jlend_ftoken]`.
-//! Configured strategies must be passed at their configured addresses (the
-//! caller cannot pick a price source). In a landing (`deposit`, `sweep_inbox`)
-//! an account that exists at the right address but no longer parses falls back
-//! to the strategy's cached value, so a landing never reverts on protocol
-//! state. Everything that pays out (`redeem`) values strictly.
+//! Configured strategies must be passed at their configured addresses, so a
+//! caller cannot pick a price source. If such an account exists but no longer
+//! parses (protocol upgrade, closed account):
+//! - while the strategy is enabled, a landing values it at its cached (last
+//!   live) value and anything that pays out fails;
+//! - once the admin disables it (`written_off`), payouts value it at zero and
+//!   landings pause without reverting, so no shares are ever minted at a
+//!   price that payouts would not honour.
 //!
-//! Known limit: protocol exchange rates are read as last stored by the
-//! protocol. Interest accrued since the protocol's last update is not counted
-//! until someone refreshes it (every allocate / redeem-via path refreshes in the
-//! same transaction); the resulting mispricing is bounded by APY × staleness.
+//! Known limit: exchange rates are read as last stored by each protocol;
+//! interest accrued since the protocol's last update is only counted after a
+//! refresh (allocate / redeem-via paths refresh in the same transaction).
 
-use anchor_lang::prelude::*;
+use pinocchio::{AccountView, Address};
 
-use crate::error::LandfallError;
+use crate::error::{require, LandfallError, Result};
 use crate::state::Vault;
 use crate::strategies::{jlend::LendingView, kamino::ReserveView};
-
-pub const NAV_ACCOUNTS: usize = 4;
+use crate::util::read_token;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Nav {
     pub idle: u64,
     pub kamino: u64,
     pub jlend: u64,
-    /// True when every configured strategy was valued from live accounts.
     pub live: bool,
     pub kamino_live: bool,
     pub jlend_live: bool,
-    /// A disabled strategy could not be valued: landings pause until the
-    /// curator resolves it (re-points or the protocol recovers).
     pub written_off: bool,
 }
 
@@ -42,93 +37,72 @@ impl Nav {
     }
 }
 
-/// Reads an SPL token account's amount if it is the expected account.
-pub fn token_amount(info: &AccountInfo, expected: &Pubkey) -> Option<u64> {
-    if info.key != expected || info.owner != &anchor_spl::token::ID {
+fn amount_if(acc: &AccountView, expected: &Address) -> Option<u64> {
+    if acc.address() != expected {
         return None;
     }
-    let data = info.try_borrow_data().ok()?;
-    if data.len() < 72 {
-        return None;
-    }
-    Some(u64::from_le_bytes(data[64..72].try_into().ok()?))
+    read_token(acc).map(|t| t.amount)
 }
 
-/// The caller must pass exactly the configured accounts; a wrong or missing
-/// key is rejected, so nobody can choose between a live and a cached price.
-fn require_keys(info: Option<&AccountInfo>, expected: &Pubkey) -> Result<()> {
-    require!(info.map(|i| i.key == expected).unwrap_or(false), LandfallError::InvalidStrategyAccount);
-    Ok(())
-}
-
-fn kamino_live(vault: &Vault, reserve: &AccountInfo, coll: &AccountInfo) -> Option<u64> {
+fn kamino_live(v: &Vault, reserve: &AccountView, coll: &AccountView) -> Option<u64> {
     let view = ReserveView::parse(reserve)?;
-    if view.collateral_mint != vault.kamino.collateral_mint || view.liquidity_mint != vault.usdc_mint {
+    if view.collateral_mint != v.kamino.collateral_mint || view.liquidity_mint != v.usdc_mint {
         return None;
     }
-    let amount = token_amount(coll, &vault.kamino.collateral_account)?;
-    view.liquidity_for_collateral(amount)
+    view.liquidity_for_collateral(amount_if(coll, &v.kamino.collateral_account)?)
 }
 
-fn jlend_live(vault: &Vault, lending: &AccountInfo, ftoken: &AccountInfo) -> Option<u64> {
+fn jlend_live(v: &Vault, lending: &AccountView, ftoken: &AccountView) -> Option<u64> {
     let view = LendingView::parse(lending)?;
-    if view.ftoken_mint != vault.jlend.ftoken_mint || view.mint != vault.usdc_mint {
+    if view.ftoken_mint != v.jlend.ftoken_mint || view.mint != v.usdc_mint {
         return None;
     }
-    let shares = token_amount(ftoken, &vault.jlend.ftoken_account)?;
-    view.assets_for_shares(shares)
+    view.assets_for_shares(amount_if(ftoken, &v.jlend.ftoken_account)?)
 }
 
-/// Computes NAV. Configured strategies must be passed at their configured
-/// addresses. If such an account cannot be parsed (protocol upgrade, closed
-/// account) a landing (`strict = false`) uses the cached value; anything that
-/// pays out (`strict = true`) fails. Once the admin disables such a strategy
-/// it is valued at zero and `written_off` is set: payouts continue on what is
-/// verifiable, while landings pause without reverting (`deposit` leaves the
-/// funds with the depositor, `sweep_inbox` leaves them in the inbox), so no
-/// shares are ever minted at a price that payouts would not honour.
-pub fn compute(vault: &Vault, idle: u64, remaining: &[AccountInfo], strict: bool) -> Result<Nav> {
-    let get = |i: usize| remaining.get(i);
+/// `nav_accounts` = `[kamino_reserve, kamino_collateral, jlend_lending, jlend_ftoken]`.
+pub fn compute(v: &Vault, idle: u64, nav_accounts: &[AccountView], strict: bool) -> Result<Nav> {
     let mut nav = Nav { idle, live: true, ..Default::default() };
+    let at = |i: usize, expected: &Address| -> Result<&AccountView> {
+        let a = nav_accounts.get(i).ok_or(LandfallError::InvalidStrategyAccount)?;
+        require(a.address() == expected, LandfallError::InvalidStrategyAccount)?;
+        Ok(a)
+    };
 
-    if vault.kamino.reserve != Pubkey::default() {
-        require_keys(get(0), &vault.kamino.reserve)?;
-        require_keys(get(1), &vault.kamino.collateral_account)?;
-        match kamino_live(vault, get(0).unwrap(), get(1).unwrap()) {
-            Some(v) => {
-                nav.kamino = v;
+    if v.kamino.reserve != Address::default() {
+        let (r, c) = (at(0, &v.kamino.reserve)?, at(1, &v.kamino.collateral_account)?);
+        match kamino_live(v, r, c) {
+            Some(x) => {
+                nav.kamino = x;
                 nav.kamino_live = true;
             }
-            None if !vault.kamino.enabled => {
-                // written off by the admin: pay out of what is verifiable only
+            None if !v.kamino.enabled => {
                 nav.kamino = 0;
                 nav.live = false;
                 nav.written_off = true;
             }
             None => {
-                require!(!strict, LandfallError::StrategyValuationUnavailable);
-                nav.kamino = vault.kamino.cached_value;
+                require(!strict, LandfallError::StrategyValuationUnavailable)?;
+                nav.kamino = v.kamino.cached_value;
                 nav.live = false;
             }
         }
     }
-    if vault.jlend.lending != Pubkey::default() {
-        require_keys(get(2), &vault.jlend.lending)?;
-        require_keys(get(3), &vault.jlend.ftoken_account)?;
-        match jlend_live(vault, get(2).unwrap(), get(3).unwrap()) {
-            Some(v) => {
-                nav.jlend = v;
+    if v.jlend.lending != Address::default() {
+        let (l, f) = (at(2, &v.jlend.lending)?, at(3, &v.jlend.ftoken_account)?);
+        match jlend_live(v, l, f) {
+            Some(x) => {
+                nav.jlend = x;
                 nav.jlend_live = true;
             }
-            None if !vault.jlend.enabled => {
-                // written off by the admin: pay out of what is verifiable only
+            None if !v.jlend.enabled => {
                 nav.jlend = 0;
                 nav.live = false;
                 nav.written_off = true;
             }
             None => {
-                require!(!strict, LandfallError::StrategyValuationUnavailable);
-                nav.jlend = vault.jlend.cached_value;
+                require(!strict, LandfallError::StrategyValuationUnavailable)?;
+                nav.jlend = v.jlend.cached_value;
                 nav.live = false;
             }
         }

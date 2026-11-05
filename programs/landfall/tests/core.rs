@@ -89,7 +89,7 @@ fn max_amount_deposits_whole_balance() {
 #[test]
 fn paused_vault_still_lands() {
     let mut env = Env::new();
-    let pause = env.curator_ix(landfall::instruction::SetPaused { paused: true }.data());
+    let pause = env.curator_ix(lc::instruction::SetPaused { paused: true }.data());
     let admin = env.admin.insecure_clone();
     env.ok(&[pause], &[&admin]);
     assert!(env.vault_state().paused);
@@ -149,7 +149,7 @@ fn sweep_fee_is_capped_at_one_percent() {
     let mut env = Env::new();
     let keeper = user(&mut env, 0);
     let owner = Pubkey::new_unique();
-    let set = env.curator_ix(landfall::instruction::SetParams { idle_buffer_bps: 1_000, sweep_fee: 50_000, min_sweep: 1_000_000 }.data());
+    let set = env.curator_ix(lc::instruction::SetParams { idle_buffer_bps: 1_000, sweep_fee: 50_000, min_sweep: 1_000_000 }.data());
     let admin = env.admin.insecure_clone();
     env.ok(&[set], &[&admin]);
     env.ok(&[env.open_inbox_ix(&keeper.pubkey(), &owner)], &[&keeper]);
@@ -248,7 +248,7 @@ fn donation_cannot_zero_out_depositor() {
 fn non_curator_cannot_pause() {
     let mut env = Env::new();
     let mallory = user(&mut env, 0);
-    let mut ix = env.curator_ix(landfall::instruction::SetPaused { paused: true }.data());
+    let mut ix = env.curator_ix(lc::instruction::SetPaused { paused: true }.data());
     ix.accounts[0].pubkey = mallory.pubkey();
     assert!(env.send(&[ix], &[&mallory]).is_err());
     assert!(!env.vault_state().paused);

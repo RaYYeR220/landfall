@@ -29,8 +29,8 @@ fn user(env: &mut Env) -> Keypair {
     k
 }
 
-fn reserve_view(env: &Env) -> landfall::strategies::kamino::ReserveView {
-    landfall::strategies::kamino::ReserveView::parse_data(&env.svm.get_account(&K_RESERVE).unwrap().data).unwrap()
+fn reserve_view(env: &Env) -> lc::strategies::kamino::ReserveView {
+    lc::strategies::kamino::ReserveView::parse_data(&env.svm.get_account(&K_RESERVE).unwrap().data).unwrap()
 }
 
 #[test]
@@ -88,7 +88,7 @@ fn allocate_blocked_when_paused_but_landing_works() {
     let (mut env, keeper) = setup();
     let alice = user(&mut env);
     let admin = env.admin.insecure_clone();
-    let pause = env.curator_ix(anchor_lang::InstructionData::data(&landfall::instruction::SetPaused { paused: true }));
+    let pause = env.curator_ix(anchor_lang::InstructionData::data(&lc::instruction::SetPaused { paused: true }));
     env.ok(&[pause], &[&admin]);
     deposit(&mut env, &alice, 10_000_000);
     assert!(env.send(&env.allocate_kamino_ixs(&keeper.pubkey(), 5_000_000), &[&keeper]).is_err());
@@ -225,9 +225,9 @@ fn written_off_strategy_keeps_idle_redeemable() {
     // the admin writes it off; idle (51 USDC) pays out at a conservative price
     let admin = env.admin.insecure_clone();
     let off = anchor_lang::solana_program::instruction::Instruction::new_with_bytes(
-        landfall::id(),
-        &anchor_lang::InstructionData::data(&landfall::instruction::SetStrategyEnabled { strategy: 1, enabled: false }),
-        anchor_lang::ToAccountMetas::to_account_metas(&landfall::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
+        lc::id(),
+        &anchor_lang::InstructionData::data(&lc::instruction::SetStrategyEnabled { strategy: 1, enabled: false }),
+        anchor_lang::ToAccountMetas::to_account_metas(&lc::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
     );
     env.ok(&[off], &[&admin]);
     env.ok(&[env.redeem_ix(&alice.pubkey(), &dest, 10_000_000, 0)], &[&alice]);
@@ -246,9 +246,9 @@ fn write_off_pauses_landings_without_reverting() {
     env.patch_account(&K_RESERVE, |a| a.data.truncate(1000));
     let admin = env.admin.insecure_clone();
     let off = anchor_lang::solana_program::instruction::Instruction::new_with_bytes(
-        landfall::id(),
-        &anchor_lang::InstructionData::data(&landfall::instruction::SetStrategyEnabled { strategy: 1, enabled: false }),
-        anchor_lang::ToAccountMetas::to_account_metas(&landfall::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
+        lc::id(),
+        &anchor_lang::InstructionData::data(&lc::instruction::SetStrategyEnabled { strategy: 1, enabled: false }),
+        anchor_lang::ToAccountMetas::to_account_metas(&lc::accounts::AdminOnly { admin: admin.pubkey(), vault: env.vault }, None),
     );
     env.ok(&[off], &[&admin]);
     env.ok(&[env.sync_nav_ix()], &[&keeper]);

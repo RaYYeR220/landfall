@@ -1,6 +1,6 @@
 [package]
 name = "landfall"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deposit addresses that execute on Solana: any-chain deposits land as shares of a curated USDC vault"
 edition.workspace = true
 rust-version.workspace = true
@@ -12,29 +12,26 @@ name = "landfall"
 
 [features]
 default = []
-cpi = ["no-entrypoint"]
 no-entrypoint = []
-no-log-ix-name = []
-idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
-anchor-debug = []
-custom-heap = []
-custom-panic = []
 
 [dependencies]
-anchor-lang = { version = "1.2.2", features = ["init-if-needed"] }
-anchor-spl = { version = "1.2.2", default-features = false, features = ["token", "associated_token", "solana-v3"] }
+pinocchio = { version = "0.12.0", features = ["cpi"] }
+pinocchio-token = "0.8.0"
+pinocchio-system = "0.7.0"
+pinocchio-associated-token-account = "0.5.0"
+solana-address = { version = "2.9", features = ["decode"] }
 
 [dev-dependencies]
+anchor-lang = "1.2.2"
 litesvm = "0.10.0"
 solana-message = "3.0.1"
 solana-transaction = "3.0.2"
 solana-signer = "3.0.0"
 solana-keypair = "3.0.1"
 solana-account = "3"
-spl-token-interface = "2"
-spl-associated-token-account-interface = "2"
 serde_json = "1"
 base64 = "0.22"
+sha2 = "0.10"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

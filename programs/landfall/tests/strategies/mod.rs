@@ -82,12 +82,12 @@ pub fn refresh_reserve_ix() -> Instruction {
             AccountMeta::new_readonly(KLEND, false),
             AccountMeta::new_readonly(K_SCOPE, false),
         ],
-        data: landfall::strategies::kamino::IX_REFRESH_RESERVE.to_vec(),
+        data: lc::strategies::kamino::IX_REFRESH_RESERVE.to_vec(),
     }
 }
 
-pub fn kamino_cpi(env: &Env) -> landfall::accounts::KaminoCpi {
-    landfall::accounts::KaminoCpi {
+pub fn kamino_cpi(env: &Env) -> lc::accounts::KaminoCpi {
+    lc::accounts::KaminoCpi {
         reserve: K_RESERVE,
         collateral_account: ata(&env.vault, &K_CMINT),
         lending_market: K_MARKET,
@@ -99,8 +99,8 @@ pub fn kamino_cpi(env: &Env) -> landfall::accounts::KaminoCpi {
     }
 }
 
-pub fn jlend_cpi(env: &Env) -> landfall::accounts::JlendCpi {
-    landfall::accounts::JlendCpi {
+pub fn jlend_cpi(env: &Env) -> lc::accounts::JlendCpi {
+    lc::accounts::JlendCpi {
         lending: J_LENDING,
         ftoken_account: ata(&env.vault, &J_FMINT),
         ftoken_mint: J_FMINT,
@@ -128,9 +128,9 @@ impl Env {
     pub fn configure_kamino(&mut self) {
         let admin = self.admin.insecure_clone();
         let ix = Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::ConfigureKamino { enabled: true }.data(),
-            landfall::accounts::ConfigureKamino {
+            lc::id(),
+            &lc::instruction::ConfigureKamino { enabled: true }.data(),
+            lc::accounts::ConfigureKamino {
                 admin: admin.pubkey(),
                 vault: self.vault,
                 usdc_mint: USDC,
@@ -149,9 +149,9 @@ impl Env {
     pub fn configure_jlend(&mut self) {
         let admin = self.admin.insecure_clone();
         let ix = Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::ConfigureJlend { enabled: true }.data(),
-            landfall::accounts::ConfigureJlend {
+            lc::id(),
+            &lc::instruction::ConfigureJlend { enabled: true }.data(),
+            lc::accounts::ConfigureJlend {
                 admin: admin.pubkey(),
                 vault: self.vault,
                 usdc_mint: USDC,
@@ -169,16 +169,16 @@ impl Env {
 
     pub fn set_weights(&mut self, k_bps: u16, j_bps: u16, k_cap: u64, j_cap: u64) {
         let admin = self.admin.insecure_clone();
-        let ix = self.curator_ix(landfall::instruction::SetWeights { kamino_bps: k_bps, jlend_bps: j_bps, kamino_cap: k_cap, jlend_cap: j_cap }.data());
+        let ix = self.curator_ix(lc::instruction::SetWeights { kamino_bps: k_bps, jlend_bps: j_bps, kamino_cap: k_cap, jlend_cap: j_cap }.data());
         self.ok(&[ix], &[&admin]);
     }
 
     pub fn allocate_kamino_ixs(&self, keeper: &Pubkey, amount: u64) -> Vec<Instruction> {
         let n = self.nav_accounts();
         let ix = Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::AllocateKamino { amount }.data(),
-            landfall::accounts::AllocateKamino {
+            lc::id(),
+            &lc::instruction::AllocateKamino { amount }.data(),
+            lc::accounts::AllocateKamino {
                 keeper: *keeper,
                 vault: self.vault,
                 usdc_mint: USDC,
@@ -196,9 +196,9 @@ impl Env {
     pub fn allocate_jlend_ix(&self, keeper: &Pubkey, amount: u64) -> Instruction {
         let n = self.nav_accounts();
         Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::AllocateJlend { amount }.data(),
-            landfall::accounts::AllocateJlend {
+            lc::id(),
+            &lc::instruction::AllocateJlend { amount }.data(),
+            lc::accounts::AllocateJlend {
                 keeper: *keeper,
                 vault: self.vault,
                 usdc_mint: USDC,
@@ -214,27 +214,27 @@ impl Env {
 
     pub fn redeem_via_kamino_ixs(&self, owner: &Pubkey, destination: &Pubkey, shares: u64, min_out: u64) -> Vec<Instruction> {
         let ix = Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::RedeemViaKamino { shares, min_out }.data(),
-            landfall::accounts::RedeemViaKamino { base: self.redeem_base(owner, destination), kamino: kamino_cpi(self) }.to_account_metas(None),
+            lc::id(),
+            &lc::instruction::RedeemViaKamino { shares, min_out }.data(),
+            lc::accounts::RedeemViaKamino { base: self.redeem_base(owner, destination), kamino: kamino_cpi(self) }.to_account_metas(None),
         );
         vec![refresh_reserve_ix(), ix]
     }
 
     pub fn redeem_via_jlend_ix(&self, owner: &Pubkey, destination: &Pubkey, shares: u64, min_out: u64) -> Instruction {
         Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::RedeemViaJlend { shares, min_out }.data(),
-            landfall::accounts::RedeemViaJlend { base: self.redeem_base(owner, destination), jlend: jlend_cpi(self) }.to_account_metas(None),
+            lc::id(),
+            &lc::instruction::RedeemViaJlend { shares, min_out }.data(),
+            lc::accounts::RedeemViaJlend { base: self.redeem_base(owner, destination), jlend: jlend_cpi(self) }.to_account_metas(None),
         )
     }
 
     pub fn sync_nav_ix(&self) -> Instruction {
         let n = self.nav_accounts();
         Instruction::new_with_bytes(
-            landfall::id(),
-            &landfall::instruction::SyncNav {}.data(),
-            landfall::accounts::SyncNav {
+            lc::id(),
+            &lc::instruction::SyncNav {}.data(),
+            lc::accounts::SyncNav {
                 vault: self.vault,
                 idle: self.idle,
                 kamino_reserve: n[0].pubkey,
