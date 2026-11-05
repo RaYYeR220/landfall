@@ -42,6 +42,12 @@ export const vaultSummary = async () => {
     landed: { total: n(nav.vault.landedTotal), count: Number(nav.vault.landedCount) },
     redeemed: n(nav.vault.redeemedTotal),
     curator: nav.vault.curator.toBase58(),
+    admin: nav.vault.admin.toBase58(),
+    params: { sweepFee: n(nav.vault.sweepFee), minSweep: n(nav.vault.minSweep), idleBufferBps: nav.vault.idleBufferBps },
+    strategies: {
+      kamino: { enabled: nav.vault.kamino.enabled, configured: !nav.vault.kamino.reserve.equals(PublicKey.default), cachedValue: n(nav.vault.kamino.cachedValue), cachedSlot: Number(nav.vault.kamino.cachedSlot) },
+      jupiterLend: { enabled: nav.vault.jlend.enabled, configured: !nav.vault.jlend.lending.equals(PublicKey.default), cachedValue: n(nav.vault.jlend.cachedValue), cachedSlot: Number(nav.vault.jlend.cachedSlot) },
+    },
   };
 };
 

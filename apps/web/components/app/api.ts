@@ -59,6 +59,17 @@ export type VaultSummary = {
   landed: { total: number; count: number };
   redeemed: number;
   curator: string;
+  admin: string;
+  params: { sweepFee: number; minSweep: number; idleBufferBps: number };
+  strategies: Record<"kamino" | "jupiterLend", { enabled: boolean; configured: boolean; cachedValue: number; cachedSlot: number }>;
+};
+
+export type VaultHealth = {
+  at: number;
+  kamino: { readable: boolean; active: boolean; emergencyMode: boolean; totalLiquidity: number; depositLimit: number; headroom: number; acceptsDeposits: boolean };
+  jupiterLend: { readable: boolean; exchangePrice: number };
+  queue: { inboxes: number; waiting: number; waitingUsdc: number } | null;
+  keeper: { address: string; sol: number; lastActivity: number | null } | null;
 };
 
 export type Activity = {
