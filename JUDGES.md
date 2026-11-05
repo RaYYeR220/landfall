@@ -24,7 +24,7 @@ Reproduce it: `cargo test --manifest-path programs/landfall/Cargo.toml --test ev
 
 ## 4. Verify on chain (1 minute)
 
-- The program, vault and share mint links above open on Solscan. The deployed binary's hash is listed in PROOF.md next to the hash of `pnpm build:program` from this repo.
+- The program, vault and share mint links above open on Solscan. `bash scripts/verifiable-build.sh` rebuilds the program in the Solana Foundation's verifiable-build image and `bash scripts/program-hash.sh` hashes what is deployed; both hashes are in PROOF.md.
 - Every flow's mainnet transactions are listed in [PROOF.md](PROOF.md).
 
 <!-- results:compute -->
@@ -39,7 +39,7 @@ Reproduce it: `cargo test --manifest-path programs/landfall/Cargo.toml --test ev
 | refresh_reserve + withdraw through Kamino | 76,584 |
 | withdraw through Jupiter Lend | 74,006 |
 
-Program binary: 101,984 bytes, sha256 `6c7d94b70f930184097debecc1a43eaebca8d8a0b30ae1907edf3eb5e11a761c`.
+Program binary (reproducible build, `scripts/verifiable-build.sh`): 101,984 bytes, sha256 `861666e04005901566106c1fe72079e942fb29f3651725a63f42dcd180744e64`.
 <!-- /results:compute -->
 
 ## Where to look in the code

@@ -27,8 +27,10 @@ const compute = existsSync(computeDir)
       .sort((a, b) => order.indexOf(a.instruction) - order.indexOf(b.instruction))
   : [];
 
-const so = join(root, "target/deploy/landfall.so");
-const binary = existsSync(so) ? readFileSync(so) : null;
+// the reproducible build is what gets deployed; fall back to a local build
+const so = [join(root, "target/verifiable/landfall.so"), join(root, "target/deploy/landfall.so")].find(existsSync) ?? "";
+const verifiable = so.includes("verifiable");
+const binary = so ? readFileSync(so) : null;
 
 const deployment = existsSync(join(root, "eval/results/deployment.json")) ? read("eval/results/deployment.json") : null;
 const solscan = (a) => `[\`${a}\`](https://solscan.io/account/${a})`;
@@ -75,19 +77,22 @@ const blocks = {
     "|---|---|",
     ...compute.map((c) => `| ${c.transaction} | ${k(c.compute_units)} |`),
     "",
-    binary ? `Program binary: ${k(binary.length)} bytes, sha256 \`${createHash("sha256").update(binary).digest("hex")}\`.` : "Program binary: build with `pnpm build:program`.",
+    binary
+      ? `Program binary${verifiable ? " (reproducible build, `scripts/verifiable-build.sh`)" : ""}: ${k(binary.length)} bytes, sha256 \`${createHash("sha256").update(binary).digest("hex")}\`.`
+      : "Program binary: build with `scripts/verifiable-build.sh`.",
   ].join("\n"),
 };
 
+const INLINE = new Set(["tests"]);
 const docsFiles = ["README.md", "JUDGES.md", "CLAIMS.md", "CHALLENGE_CHECKLIST.md"].filter((f) => existsSync(join(root, f)));
 let stale = false;
 for (const f of docsFiles) {
   const path = join(root, f);
   const before = readFileSync(path, "utf8");
-  // a block whose markers sit on one line (e.g. inside a table cell) is rendered inline
-  const after = before.replace(/<!-- results:(\w+) -->([\s\S]*?)<!-- \/results:\1 -->/g, (m, name, inner) => {
+  // `tests` sits inside sentences and table cells; everything else is a block on its own lines
+  const after = before.replace(/<!-- results:(\w+) -->([\s\S]*?)<!-- \/results:\1 -->/g, (m, name) => {
     if (blocks[name] === undefined) return m;
-    return !inner.startsWith("\n") ?`<!-- results:${name} -->${blocks[name]}<!-- /results:${name} -->` : `<!-- results:${name} -->\n${blocks[name]}\n<!-- /results:${name} -->`;
+    return INLINE.has(name) ? `<!-- results:${name} -->${blocks[name]}<!-- /results:${name} -->` : `<!-- results:${name} -->\n${blocks[name]}\n<!-- /results:${name} -->`;
   });
   if (after !== before) {
     stale = true;

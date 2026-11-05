@@ -6,7 +6,9 @@ You withdraw 300 USDT from an exchange on Tron to an address you saved months ag
 
 Landfall gives every wallet one permanent deposit address on each of 30+ chains, Bitcoin, Tron and exchange withdrawals included. Whatever arrives is swapped by Aurora Intents, delivered to the owner's inbox on Solana and minted as shares of a curated USDC vault that lends on Kamino and Jupiter Lend. Wallet users can do the same in one signature through Intents Connect. Withdrawals go back out to any chain.
 
-<!-- results:headline -->A direct bridge-and-deposit into Kamino reverts in 4 of 6 adverse market conditions and strands the bridged funds. Landfall lands 6 of 6.<!-- /results:headline -->
+<!-- results:headline -->
+A direct bridge-and-deposit into Kamino reverts in 4 of 6 adverse market conditions and strands the bridged funds. Landfall lands 6 of 6.
+<!-- /results:headline -->
 
 - **Try it:** open the app, connect any EVM or Solana wallet, and copy your addresses. Or press **Fire a live deposit** on the landing page: a spend-capped wallet on Base sends 1 USDC through Aurora and you watch it land on Solana. No wallet, funds or install needed.
 - **Review it in 5 minutes:** [JUDGES.md](JUDGES.md). Every claim and its evidence: [CLAIMS.md](CLAIMS.md). What is real and what is simulated: [MOCKS.md](MOCKS.md).
@@ -17,7 +19,8 @@ The documented way to bring funds into a Solana protocol with Intents Connect is
 
 Landfall splits landing from investing. Landing is one small instruction that only mints vault shares against the idle USDC buffer. It never calls a lending protocol, so it has nothing to fail on. Moving idle USDC into Kamino and Jupiter Lend is a separate, permissionless step that simply waits while a strategy can't take deposits.
 
-<!-- results:landing -->| Condition (mainnet snapshot, $25 bridged) | Direct deposit into Kamino | Landfall |
+<!-- results:landing -->
+| Condition (mainnet snapshot, $25 bridged) | Direct deposit into Kamino | Landfall |
 |---|---|---|
 | Normal conditions (negative control: both must land) | lands | lands, 24.96 lfUSDC minted |
 | Kamino USDC reserve is at its deposit limit when the bridged funds arrive | **reverts** (`custom program error: 0x17ca`), $25 stuck | lands, 24.96 lfUSDC minted |
@@ -27,7 +30,8 @@ Landfall splits landing from investing. Landing is one small instruction that on
 | The USDC reserve is marked obsolete (status ≠ active) | **reverts** (`custom program error: 0x17c2`), $25 stuck | lands, 24.96 lfUSDC minted |
 | A protocol upgrade leaves the reserve account unreadable to integrators | **reverts** (`SBF program panicked`), $25 stuck | lands, 24.96 lfUSDC minted |
 
-Adverse conditions: Landfall **6/6**, direct deposit **2/6** ($100 stranded across the failures). Source: `eval/results/landing.json`, produced by `programs/landfall/tests/eval_landing.rs`.<!-- /results:landing -->
+Adverse conditions: Landfall **6/6**, direct deposit **2/6** ($100 stranded across the failures). Source: `eval/results/landing.json`, produced by `programs/landfall/tests/eval_landing.rs`.
+<!-- /results:landing -->
 
 The two "lands" rows for the direct recipe are an honest negative: Kamino deposits don't need a fresh oracle price, so a stale or out-of-band price doesn't break it. The reverts come from hard stops.
 
@@ -82,7 +86,8 @@ Safety properties, each covered by a test:
 - The curator can't move user funds, can't stop withdrawals, and can't hold an inbox hostage (minimum sweep is bounded).
 - `init_vault` can only be called by the program's upgrade authority, and the share mint can't be pre-funded into a broken state.
 
-<!-- results:compute -->| Transaction | Compute units |
+<!-- results:compute -->
+| Transaction | Compute units |
 |---|---|
 | deposit | 16,474 |
 | create the share account + deposit | 39,653 |
@@ -93,7 +98,8 @@ Safety properties, each covered by a test:
 | refresh_reserve + withdraw through Kamino | 76,584 |
 | withdraw through Jupiter Lend | 74,006 |
 
-Program binary: 101,984 bytes, sha256 `6c7d94b70f930184097debecc1a43eaebca8d8a0b30ae1907edf3eb5e11a761c`.<!-- /results:compute -->
+Program binary (reproducible build, `scripts/verifiable-build.sh`): 101,984 bytes, sha256 `861666e04005901566106c1fe72079e942fb29f3651725a63f42dcd180744e64`.
+<!-- /results:compute -->
 
 ## Repository
 
@@ -114,7 +120,8 @@ Requirements: Node 22+, pnpm 9, Rust with the Solana platform tools (`cargo-buil
 
 ```sh
 pnpm install
-pnpm build:program                                   # target/deploy/landfall.so
+pnpm build:program                                   # local build: target/deploy/landfall.so
+bash scripts/verifiable-build.sh                     # the deployed build, in Docker: target/verifiable/landfall.so
 cargo test --manifest-path programs/landfall/Cargo.toml   # program tests + landing eval
 pnpm --filter @landfall/sdk test                     # SDK tests
 node scripts/render-results.mjs                      # refresh the numbers in the docs

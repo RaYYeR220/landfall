@@ -5,7 +5,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 RPC="${RPC:-https://api.mainnet-beta.solana.com}"
 : "${ADMIN_KEYPAIR:?set ADMIN_KEYPAIR}"
-SO="$ROOT/target/deploy/landfall.so"
+# deploy the reproducible build (scripts/verifiable-build.sh) unless SO is given
+SO="${SO:-$ROOT/target/verifiable/landfall.so}"
+[ -f "$SO" ] || { echo "missing $SO — run scripts/verifiable-build.sh"; exit 1; }
 echo "program  $(solana address -k "$ROOT/target/deploy/landfall-keypair.json")"
 echo "payer    $(solana address -k "$ADMIN_KEYPAIR")  balance $(solana balance -k "$ADMIN_KEYPAIR" --url "$RPC")"
 echo "binary   $(wc -c < "$SO") bytes  sha256 $(sha256sum "$SO" | cut -d' ' -f1)"
