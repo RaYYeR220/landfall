@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import landing from "../../../../eval/results/landing.json";
+import SiteHeader from "../SiteHeader";
 import { getJson, short, solscanAccount, usd, type VaultHealth, type VaultSummary } from "../app/api";
 
 const adverse = landing.results.filter((r) => r.id !== "healthy");
@@ -92,21 +93,11 @@ export default function VaultConsole() {
 
   return (
     <div className="min-h-screen">
-      <header className="wrap flex h-[72px] items-center justify-between">
-        <Link href="/" className="text-[17px] font-medium tracking-tight">
-          Landfall
-        </Link>
-        <nav className="hidden gap-7 text-sm text-ink-2 md:flex">
-          <Link href="/app">App</Link>
-          <Link href="/vault" className="text-ink">
-            Vault
-          </Link>
-          <Link href="/#how">How it works</Link>
-        </nav>
+      <SiteHeader current="vault">
         <Link href="/app" className="btn btn-primary h-10">
           Open app
         </Link>
-      </header>
+      </SiteHeader>
 
       <main className="wrap grid gap-6 pb-24 pt-6">
         <section className="card p-6 md:p-8">

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import SiteHeader from "../SiteHeader";
 import { short, usd } from "./api";
 import { useActivity, useIdentity, usePosition, useVault } from "./hooks";
 import { useLandfallWallet } from "./Providers";
@@ -13,17 +13,7 @@ import ActivityList from "./ActivityList";
 const Header = () => {
   const { wallet } = useLandfallWallet();
   return (
-    <header className="wrap flex h-[72px] items-center justify-between">
-      <Link href="/" className="text-[17px] font-medium tracking-tight">
-        Landfall
-      </Link>
-      <nav className="hidden gap-7 text-sm text-ink-2 md:flex">
-        <Link href="/app" className="text-ink">
-          App
-        </Link>
-        <Link href="/vault">Vault</Link>
-        <Link href="/#how">How it works</Link>
-      </nav>
+    <SiteHeader current="app">
       {wallet.isConnected ? (
         <button className="btn btn-ghost h-10" onClick={() => wallet.disconnect()} title="Disconnect">
           <span className="inline-block h-2 w-2 rounded-full bg-ok" />
@@ -34,7 +24,7 @@ const Header = () => {
           {wallet.isConnecting ? "Connecting…" : "Connect wallet"}
         </button>
       )}
-    </header>
+    </SiteHeader>
   );
 };
 

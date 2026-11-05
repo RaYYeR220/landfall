@@ -16,9 +16,11 @@ export function Footer() {
           <a href={DOCS_URL} target="_blank" rel="noreferrer">
             Docs
           </a>
-          <a href={REPO_URL} target="_blank" rel="noreferrer">
-            {REPO_LABEL}
-          </a>
+          {REPO_URL && (
+            <a href={REPO_URL} target="_blank" rel="noreferrer">
+              {REPO_LABEL}
+            </a>
+          )}
         </nav>
       </div>
     </footer>
