@@ -3,7 +3,7 @@
  * (Intents Deposits) and the Swap API (incl. Confidential Intents). The API key
  * is passed in by the caller (server side) and never embedded in clients.
  */
-import { AURORA } from "../constants.js";
+import { AURORA } from "../constants";
 
 export type DepositChain =
   | "eth" | "bera" | "base" | "gnosis" | "arb" | "bsc" | "avax" | "op" | "pol" | "monad" | "adi" | "plasma" | "scroll" | "xlayer" | "hood"

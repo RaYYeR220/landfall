@@ -10,9 +10,9 @@
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import type { SolanaRecipe, SolanaStep } from "@aurora-is-near/intents-connect";
 import { BACKEND_PLACEHOLDERS } from "@aurora-is-near/intents-connect";
-import { AURORA_ASSETS, TOKEN_PROGRAM_ID, USDC_DECIMALS } from "./constants.js";
-import { createAtaIdempotentIx, depositIx, discriminator, redeemIxs, type RedeemSource } from "./ix.js";
-import { ata, type VaultAddresses } from "./pda.js";
+import { AURORA_ASSETS, TOKEN_PROGRAM_ID, USDC_DECIMALS } from "./constants";
+import { createAtaIdempotentIx, depositIx, discriminator, redeemIxs, type RedeemSource } from "./ix";
+import { ata, type VaultAddresses } from "./pda";
 
 /** Converts instructions to Intents Connect steps, swapping the intermediary for its placeholder. */
 export const toSteps = (ixs: TransactionInstruction[], intermediary: PublicKey, names: string[] = []): SolanaStep[] =>

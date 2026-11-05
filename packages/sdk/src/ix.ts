@@ -7,8 +7,8 @@ import {
   KAMINO,
   SYSTEM_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-} from "./constants.js";
-import { ata, inboxAddresses, type VaultAddresses } from "./pda.js";
+} from "./constants";
+import { ata, inboxAddresses, type VaultAddresses } from "./pda";
 
 /** Anchor instruction discriminator: sha256("global:<name>")[0..8]. */
 export const discriminator = (name: string): Buffer => createHash("sha256").update(`global:${name}`).digest().subarray(0, 8);

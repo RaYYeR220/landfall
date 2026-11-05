@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nextAllocation, type Nav } from "../src/index.js";
+import { nextAllocation, type Nav } from "../src/index";
 
 const nav = (idle: bigint, kamino: bigint, jl: bigint, over: Partial<Nav["vault"]> = {}): Nav => ({
   idle, kamino, jupiterLend: jl, total: idle + kamino + jl, shareSupply: 0n, sharePrice1e6: 0n,

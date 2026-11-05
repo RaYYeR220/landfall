@@ -1,6 +1,6 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import { JUPITER_LEND, KAMINO, VIRTUAL_ASSETS, VIRTUAL_SHARES } from "./constants.js";
-import { ata, type VaultAddresses } from "./pda.js";
+import { JUPITER_LEND, KAMINO, VIRTUAL_ASSETS, VIRTUAL_SHARES } from "./constants";
+import { ata, type VaultAddresses } from "./pda";
 
 const key = (d: Buffer, o: number) => new PublicKey(d.subarray(o, o + 32));
 const u64 = (d: Buffer, o: number) => d.readBigUInt64LE(o);

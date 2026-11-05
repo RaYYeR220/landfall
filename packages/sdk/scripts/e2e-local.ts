@@ -27,7 +27,7 @@ import {
   syncNavIx,
   USDC_MINT,
   vaultAddresses,
-} from "../src/index.js";
+} from "../src/index";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
 const conn = new Connection(process.env.RPC ?? "http://127.0.0.1:8899", "confirmed");

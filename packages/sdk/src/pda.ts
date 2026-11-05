@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, LANDFALL_PROGRAM_ID, SEEDS, TOKEN_PROGRAM_ID, USDC_MINT } from "./constants.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, LANDFALL_PROGRAM_ID, SEEDS, TOKEN_PROGRAM_ID, USDC_MINT } from "./constants";
 
 export const ata = (owner: PublicKey, mint: PublicKey): PublicKey =>
   PublicKey.findProgramAddressSync([owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()], ASSOCIATED_TOKEN_PROGRAM_ID)[0];

@@ -13,9 +13,9 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js";
 import { createHash } from "node:crypto";
-import { createAtaIdempotentIx, allocateJlendIx, allocateKaminoIxs, sweepInboxIx, syncNavIx } from "./ix.js";
-import { inboxAddresses, type VaultAddresses } from "./pda.js";
-import { decodeInbox, readNav, type Nav } from "./state.js";
+import { createAtaIdempotentIx, allocateJlendIx, allocateKaminoIxs, sweepInboxIx, syncNavIx } from "./ix";
+import { inboxAddresses, type VaultAddresses } from "./pda";
+import { decodeInbox, readNav, type Nav } from "./state";
 
 const INBOX_DISCRIMINATOR = createHash("sha256").update("account:Inbox").digest().subarray(0, 8);
 const INBOX_SIZE = 8 + 32 + 32 + 8 + 8 + 8 + 1;

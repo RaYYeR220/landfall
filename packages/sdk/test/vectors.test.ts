@@ -16,7 +16,7 @@ import {
   syncNavIx,
   USDC_MINT,
   vaultAddresses,
-} from "../src/index.js";
+} from "../src/index";
 
 // Produced by `cargo test -p landfall --test client_vectors` from the program's own Anchor client types.
 const vectors = JSON.parse(readFileSync(resolve(import.meta.dirname, "vectors.json"), "utf8"));

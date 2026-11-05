@@ -6,7 +6,7 @@
  */
 import { readFileSync } from "node:fs";
 import { ComputeBudgetProgram, Connection, Keypair, sendAndConfirmTransaction, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { configureJlendIx, configureKaminoIx, initVaultIx, readNav, setParamsIx, setWeightsIx, vaultAddresses } from "../src/index.js";
+import { configureJlendIx, configureKaminoIx, initVaultIx, readNav, setParamsIx, setWeightsIx, vaultAddresses } from "../src/index";
 
 const rpc = process.env.RPC ?? "https://api.mainnet-beta.solana.com";
 const conn = new Connection(rpc, "confirmed");

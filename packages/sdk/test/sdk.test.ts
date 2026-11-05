@@ -14,7 +14,7 @@ import {
   vaultAddresses,
   withdrawAnywhereSteps,
   withdrawToSolanaSteps,
-} from "../src/index.js";
+} from "../src/index";
 
 const v = vaultAddresses();
 const intermediary = new PublicKey("FTyLUa5jYKqKfgixknDjDZ32RHWx4x9eqgrKnpwLE9cw");
