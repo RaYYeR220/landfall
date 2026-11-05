@@ -290,3 +290,32 @@ fn prefunding_the_share_mint_address_does_not_brick_init() {
     let env = Env::with_svm(svm, admin, usdc);
     assert_eq!(env.mint_supply(&env.share_mint), 1_000_000);
 }
+
+#[test]
+fn dust_deposit_stays_with_depositor() {
+    let mut env = Env::new();
+    // push the share price above 1 USDC per share so 5 base units buy zero shares
+    let (idle, vault) = (env.idle, env.vault);
+    let current = env.token_balance(&idle);
+    env.set_token(&idle, &USDC, &vault, current + 10_000_000);
+    let alice = user(&mut env, 5);
+    let create = env.create_ata_ix(&alice.pubkey(), &alice.pubkey(), &env.share_mint);
+    env.ok(&[create, env.deposit_ix(&alice.pubkey(), &alice.pubkey(), 5)], &[&alice]);
+    assert_eq!(shares_of(&env, &alice.pubkey()), 0);
+    assert_eq!(env.token_balance(&ata(&alice.pubkey(), &USDC)), 5);
+    assert_eq!(env.token_balance(&idle), current + 10_000_000);
+}
+
+#[test]
+fn pause_does_not_block_withdrawals() {
+    let mut env = Env::new();
+    let alice = user(&mut env, 3_000_000);
+    let create = env.create_ata_ix(&alice.pubkey(), &alice.pubkey(), &env.share_mint);
+    env.ok(&[create, env.deposit_ix(&alice.pubkey(), &alice.pubkey(), 3_000_000)], &[&alice]);
+    let admin = env.admin.insecure_clone();
+    env.ok(&[env.curator_ix(lc::instruction::SetPaused { paused: true }.data())], &[&admin]);
+    let dest = ata(&alice.pubkey(), &USDC);
+    env.ok(&[env.redeem_ix(&alice.pubkey(), &dest, 3_000_000, 2_990_000)], &[&alice]);
+    assert!(env.token_balance(&dest) >= 2_990_000);
+    assert_eq!(shares_of(&env, &alice.pubkey()), 0);
+}
