@@ -128,3 +128,36 @@ export const redeemSourceFor = (nav: Nav, assets: bigint): "idle" | "kamino" | "
   if (nav.jupiterLend >= shortfall) return "jupiter-lend";
   return nav.kamino >= shortfall ? "kamino" : "jupiter-lend";
 };
+
+const DISC = {
+  reserve: "2bf2ccca1af73b7f",
+  market: "f6723262489d1c78",
+  lending: "87c75210f983b6f1",
+};
+const is = (d: Buffer | undefined, disc: string, minLen: number): d is Buffer => !!d && d.length >= minLen && d.subarray(0, 8).toString("hex") === disc;
+
+export type StrategyHealth = {
+  kamino: { readable: boolean; active: boolean; emergencyMode: boolean; totalLiquidity: bigint; depositLimit: bigint; headroom: bigint; acceptsDeposits: boolean };
+  jupiterLend: { readable: boolean; exchangePrice: bigint };
+};
+
+/**
+ * Live state of the two strategies, read the way the program reads them.
+ * Every condition here is one that makes a direct "bridge, then deposit into
+ * the lending protocol" transaction revert. Landfall's landing does not depend
+ * on any of them; allocation simply waits.
+ */
+export const strategyHealth = async (connection: Connection): Promise<StrategyHealth> => {
+  const infos = await connection.getMultipleAccountsInfo([KAMINO.reserve, KAMINO.market, JUPITER_LEND.lending], "confirmed");
+  const [reserve, market, lending] = infos.map((i) => (i ? Buffer.from(i.data) : undefined));
+  const kReadable = is(reserve, DISC.reserve, 5024) && is(market, DISC.market, 123);
+  let kamino: StrategyHealth["kamino"] = { readable: false, active: false, emergencyMode: false, totalLiquidity: 0n, depositLimit: 0n, headroom: 0n, acceptsDeposits: false };
+  if (kReadable) {
+    const r = kaminoReserveRate(reserve);
+    const emergencyMode = market[122] !== 0;
+    const headroom = r.depositLimit > r.totalLiquidity ? r.depositLimit - r.totalLiquidity : 0n;
+    kamino = { readable: true, active: r.active, emergencyMode, totalLiquidity: r.totalLiquidity, depositLimit: r.depositLimit, headroom, acceptsDeposits: r.active && !emergencyMode && headroom > 0n };
+  }
+  const jReadable = is(lending, DISC.lending, 123);
+  return { kamino, jupiterLend: { readable: jReadable, exchangePrice: jReadable ? jlendExchangePrice(lending) : 0n } };
+};
