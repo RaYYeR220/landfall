@@ -108,6 +108,7 @@ programs/landfall/     Pinocchio program, LiteSVM tests against mainnet account 
 packages/sdk/          TypeScript SDK: instruction builders, NAV reader, Intents Connect steps,
                        Aurora Intents clients, keeper logic, curator and set-up scripts
 apps/web/              Next.js app: landing, /app (addresses, deposit, withdraw, recovery), /vault
+packages/mcp/          MCP server: addresses, position, vault state, unsigned deposit / withdraw transactions
 apps/keeper/           Keeper loop: open inboxes, sweep, allocate, sync
 eval/results/          Machine-written results that every number in these docs comes from
 scripts/               Fixture dump, deploy, results renderer
@@ -134,6 +135,16 @@ pnpm --filter @landfall/web dev
 | `KEEPER_SECRET_KEY`, `KEEPER_PUBLIC_KEY` | Keeper key that pays inbox rent and sweep fees; the public key is shown on `/vault`. |
 | `DEMO_ENABLED`, `DEMO_EVM_PRIVATE_KEY`, `DEMO_FIRE_AMOUNT_USDC`, `BASE_RPC_URL` | The "Fire a live deposit" button: a Base wallet holding only the demo budget, one fire per 45 s. |
 | `MAX_NEW_INBOXES_PER_HOUR` | Global cap on new inboxes (the keeper pays their rent). |
+
+### For agents
+
+`packages/mcp` is an MCP server over the same API. Agents can look up a wallet's permanent addresses, read its position and the vault, and get unsigned Solana transactions for deposits and for withdrawals to Solana or another chain, which the wallet then signs. It never holds a key.
+
+```json
+{ "mcpServers": { "landfall": { "command": "npx", "args": ["tsx", "packages/mcp/src/index.ts"], "env": { "LANDFALL_URL": "https://<app>", "SOLANA_RPC_URL": "https://<rpc>" } } } }
+```
+
+### Keeper
 
 The keeper runs anywhere Node runs: `KEEPER_SECRET_KEY=… SOLANA_RPC_URL=… pnpm --filter @landfall/keeper start`.
 

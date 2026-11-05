@@ -1,0 +1,25 @@
+{
+  "name": "@landfall/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Landfall: deposit addresses on every chain, vault state, and unsigned deposit and withdrawal transactions for agents",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "landfall-mcp": "./src/index.ts" },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@landfall/sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@solana/web3.js": "1.98.4",
+    "tsx": "4.20.3",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "typescript": "5.8.3",
+    "vitest": "3.2.4"
+  }
+}
