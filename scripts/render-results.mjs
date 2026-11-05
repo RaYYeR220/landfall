@@ -30,7 +30,22 @@ const compute = existsSync(computeDir)
 const so = join(root, "target/deploy/landfall.so");
 const binary = existsSync(so) ? readFileSync(so) : null;
 
+const deployment = existsSync(join(root, "eval/results/deployment.json")) ? read("eval/results/deployment.json") : null;
+const solscan = (a) => `[\`${a}\`](https://solscan.io/account/${a})`;
+const links = deployment
+  ? [
+      `- **Live app:** ${deployment.appUrl}`,
+      deployment.videoUrl ? `- **Video:** ${deployment.videoUrl}` : null,
+      `- **Program:** ${solscan(deployment.programId)}`,
+      `- **Vault:** ${solscan(deployment.vault)} · **Share token (lfUSDC):** ${solscan(deployment.shareMint)}`,
+      deployment.repoUrl ? `- **Source:** ${deployment.repoUrl}${deployment.mirrorUrl ? ` (mirror: ${deployment.mirrorUrl})` : ""}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n")
+  : "_Not deployed from this checkout: `eval/results/deployment.json` is written by `packages/sdk/scripts/init-vault.ts`._";
+
 const blocks = {
+  links,
   headline: `A direct bridge-and-deposit into Kamino reverts in ${adverse.length - docs} of ${adverse.length} adverse market conditions and strands the bridged funds. Landfall lands ${lf} of ${adverse.length}.`,
   landing: [
     `| Condition (mainnet snapshot, ${usd(landing.bridged_usdc)} bridged) | Direct deposit into Kamino | Landfall |`,

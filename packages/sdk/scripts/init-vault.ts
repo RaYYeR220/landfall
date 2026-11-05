@@ -4,7 +4,8 @@
  *
  *   ADMIN_KEYPAIR=… RPC=… npx tsx packages/sdk/scripts/init-vault.ts
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { ComputeBudgetProgram, Connection, Keypair, sendAndConfirmTransaction, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { configureJlendIx, configureKaminoIx, initVaultIx, readNav, setParamsIx, setWeightsIx, vaultAddresses } from "../src/index";
 
@@ -31,5 +32,21 @@ const main = async () => {
   await send("set_weights 60/40 + params", [setWeightsIx(v, admin.publicKey, 6000, 4000, CAP, CAP), setParamsIx(v, admin.publicKey, 1000, 10_000n, 1_000_000n)]);
   const nav = await readNav(conn, v);
   console.log(`NAV ${nav.total} (idle ${nav.idle}) · shares ${nav.shareSupply} · kamino ${nav.vault.kamino.enabled} · jlend ${nav.vault.jlend.enabled}`);
+  const out = fileURLToPath(new URL("../../../eval/results/deployment.json", import.meta.url));
+  const deployment = {
+    cluster: "mainnet-beta",
+    programId: v.programId.toBase58(),
+    vault: v.vault.toBase58(),
+    shareMint: v.shareMint.toBase58(),
+    admin: admin.publicKey.toBase58(),
+    curator: nav.vault.curator.toBase58(),
+    appUrl: process.env.APP_URL ?? null,
+    repoUrl: process.env.REPO_URL ?? null,
+    mirrorUrl: process.env.MIRROR_URL ?? null,
+    videoUrl: process.env.VIDEO_URL ?? null,
+    initialisedAt: new Date().toISOString(),
+  };
+  writeFileSync(out, JSON.stringify(deployment, null, 2) + "\n");
+  console.log(`wrote ${out}`);
 };
 main().catch((e) => { console.error(e); process.exit(1); });

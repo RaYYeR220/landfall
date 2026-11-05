@@ -90,7 +90,7 @@ Safety properties, each covered by a test:
 | Transaction | Compute units |
 |---|---|
 | deposit | 16,474 |
-| create the share account + deposit | 38,153 |
+| create the share account + deposit | 36,653 |
 | deposit while both strategies hold funds | 17,428 |
 | sweep an inbox (creates the share account) | 46,393 |
 | refresh_reserve + allocate into Kamino | 85,856 |
