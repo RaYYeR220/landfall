@@ -36,12 +36,12 @@ const transport = () => http(process.env.BASE_RPC_URL ?? "https://mainnet.base.o
 const asset = () => (process.env.DEMO_FIRE_ASSET === "usdc" ? "usdc" : "eth");
 const amount = () =>
   asset() === "eth"
-    ? BigInt(Math.round(Number(process.env.DEMO_FIRE_AMOUNT_ETH ?? "0.0007") * 1e18))
+    ? BigInt(Math.round(Number(process.env.DEMO_FIRE_AMOUNT_ETH ?? "0.0006") * 1e18))
     : BigInt(Math.round(Number(process.env.DEMO_FIRE_AMOUNT_USDC ?? "1") * 1e6));
 const display = () => (asset() === "eth" ? `${Number(amount()) / 1e18} ETH` : `${Number(amount()) / 1e6} USDC`);
 export const demoBudget = () => ({ enabled: process.env.DEMO_ENABLED === "true", asset: asset(), display: display() });
 /** ETH kept back for gas on Base. */
-const GAS_RESERVE = 200_000_000_000_000n; // 0.0002 ETH
+const GAS_RESERVE = 20_000_000_000_000n; // 0.00002 ETH; a Base transfer costs well under that
 
 let lastFire = 0;
 const COOLDOWN_MS = 45_000;
