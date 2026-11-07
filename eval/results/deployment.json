@@ -1,0 +1,13 @@
+{
+  "cluster": "mainnet-beta",
+  "programId": "12pHvK6FYFHP748kom4F3AbKcymKGVN2r9n1GtX3zdyZ",
+  "vault": "CpctatgJ8hBKgMF27LeHo4erLcDEhTYsXM829hLtbNnf",
+  "shareMint": "2UrXgqxWHFk75NzWTAxviwgc7iY1N3xZCzjr9ttxp2Ce",
+  "admin": "AzzxdmwR87BCwBwS9MpQFQHyyqTesN42PGeY16Ei2JTD",
+  "curator": "AzzxdmwR87BCwBwS9MpQFQHyyqTesN42PGeY16Ei2JTD",
+  "appUrl": "https://landfall-peach.vercel.app",
+  "repoUrl": "",
+  "mirrorUrl": "",
+  "videoUrl": null,
+  "initialisedAt": "2026-11-07T23:01:01.368Z"
+}
