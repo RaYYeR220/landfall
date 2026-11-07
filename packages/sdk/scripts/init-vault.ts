@@ -6,8 +6,8 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { ComputeBudgetProgram, Connection, Keypair, sendAndConfirmTransaction, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { configureJlendIx, configureKaminoIx, initVaultIx, readNav, setParamsIx, setWeightsIx, vaultAddresses } from "../src/index";
+import { Connection, Keypair, TransactionInstruction } from "@solana/web3.js";
+import { configureJlendIx, configureKaminoIx, initVaultIx, readNav, sendReliably, setParamsIx, setWeightsIx, vaultAddresses } from "../src/index";
 
 const rpc = process.env.RPC ?? "https://api.mainnet-beta.solana.com";
 const conn = new Connection(rpc, "confirmed");
@@ -16,8 +16,7 @@ const v = vaultAddresses();
 const CAP = BigInt(process.env.STRATEGY_CAP_USDC ?? "5000") * 1_000_000n;
 
 const send = async (label: string, ixs: TransactionInstruction[]) => {
-  const tx = new Transaction().add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 100_000 }), ...ixs);
-  const sig = await sendAndConfirmTransaction(conn, tx, [admin], { commitment: "confirmed", maxRetries: 5 });
+  const sig = await sendReliably(conn, ixs, [admin], { computeUnits: 300_000, priorityFee: 200_000, log: (m) => console.log(`  ${label}: ${m}`) });
   console.log(`✓ ${label}  https://solscan.io/tx/${sig}`);
 };
 

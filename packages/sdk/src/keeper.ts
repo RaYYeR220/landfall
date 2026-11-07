@@ -4,19 +4,12 @@
  * Anyone can run it; Landfall runs it as a service and on demand from the app.
  */
 import { Buffer } from "buffer";
-import {
-  ComputeBudgetProgram,
-  Connection,
-  Keypair,
-  PublicKey,
-  sendAndConfirmTransaction,
-  Transaction,
-  TransactionInstruction,
-} from "@solana/web3.js";
+import { Connection, Keypair, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { sha256 } from "@noble/hashes/sha256";
 import { createAtaIdempotentIx, allocateJlendIx, allocateKaminoIxs, sweepInboxIx, syncNavIx } from "./ix";
 import { inboxAddresses, type VaultAddresses } from "./pda";
 import { decodeInbox, readNav, type Nav } from "./state";
+import { sendReliably } from "./send";
 
 const INBOX_DISCRIMINATOR = Buffer.from(sha256(new TextEncoder().encode("account:Inbox"))).subarray(0, 8);
 const INBOX_SIZE = 8 + 32 + 32 + 8 + 8 + 8 + 1;
@@ -49,10 +42,7 @@ export const listInboxes = async (connection: Connection, v: VaultAddresses) => 
 };
 
 const send = async (o: CrankOptions, ixs: TransactionInstruction[]) => {
-  const tx = new Transaction();
-  if (o.priorityFee) tx.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: o.priorityFee }));
-  tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 250_000 }), ...ixs);
-  return sendAndConfirmTransaction(o.connection, tx, [o.keeper], { commitment: "confirmed", maxRetries: 3 });
+  return sendReliably(o.connection, ixs, [o.keeper], { computeUnits: 250_000, priorityFee: o.priorityFee ?? 50_000, attempts: 3 });
 };
 
 /** Which strategy is furthest below its target and how much it may take. */

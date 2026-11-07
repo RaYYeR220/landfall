@@ -8,8 +8,8 @@
  *   … curator.ts strategy <kamino|jupiter-lend> <on|off>      (admin)
  */
 import { readFileSync } from "node:fs";
-import { ComputeBudgetProgram, Connection, Keypair, sendAndConfirmTransaction, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { readNav, setParamsIx, setPausedIx, setStrategyEnabledIx, setWeightsIx, strategyHealth, vaultAddresses } from "../src/index";
+import { Connection, Keypair, TransactionInstruction } from "@solana/web3.js";
+import { readNav, sendReliably, setParamsIx, setPausedIx, setStrategyEnabledIx, setWeightsIx, strategyHealth, vaultAddresses } from "../src/index";
 
 const conn = new Connection(process.env.RPC ?? "https://api.mainnet-beta.solana.com", "confirmed");
 const v = vaultAddresses();
@@ -19,9 +19,7 @@ const bps = (x: string) => Math.round(Number(x) * 100);
 const fmt = (x: bigint) => (Number(x) / 1e6).toFixed(6);
 
 const send = async (label: string, ix: TransactionInstruction) => {
-  const kp = signer();
-  const tx = new Transaction().add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }), ix);
-  const sig = await sendAndConfirmTransaction(conn, tx, [kp], { commitment: "confirmed", maxRetries: 5 });
+  const sig = await sendReliably(conn, [ix], [signer()], { computeUnits: 50_000, priorityFee: 100_000 });
   console.log(`✓ ${label}  https://solscan.io/tx/${sig}`);
 };
 
