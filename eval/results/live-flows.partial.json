@@ -1,0 +1,19 @@
+{
+  "ranAt": "2026-11-07T23:08:40.230Z",
+  "app": "https://landfall-peach.vercel.app",
+  "wallet": "0xA37000D10e8e7Bf120461c873d2901aD38B2d3cE",
+  "owner": "4jxzL1YwFw5FtcraNLbkUFZo1P8spZAcjERWqXPYuytg",
+  "permanentAddress": {
+    "route": "address",
+    "from": "0xA37000D10e8e7Bf120461c873d2901aD38B2d3cE",
+    "depositAddress": "0x0C42B9Ad948CB00650c56DE2E99Bc3f8a2dFf2EC",
+    "owner": "4jxzL1YwFw5FtcraNLbkUFZo1P8spZAcjERWqXPYuytg",
+    "inbox": "93VdSUGNDRWxzwwZGh9hByVhNYUaC253XQ9bZ33D9AVo",
+    "amount": "600000000000000",
+    "display": "0.0006 ETH",
+    "txHash": "0x0d16f7caa21049f689833afc033ea72fa46f198812dfe9f200e26c1c09f310ed",
+    "base": "https://basescan.org/tx/0x0d16f7caa21049f689833afc033ea72fa46f198812dfe9f200e26c1c09f310ed",
+    "landing": "SUxzdc1cnNXWGwhLsy4s4B2jsdVH2bzAVnBQ91fbiyFhLPDAoDbPKu1YatnW5vFU4AUdM1jxFRzGLZfWQTeH9CK"
+  },
+  "error": "bridge-in landing did not land within 15 minutes"
+}
