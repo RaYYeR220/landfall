@@ -10,7 +10,7 @@ Landfall gives every wallet one permanent deposit address on each of 30+ chains,
 A direct bridge-and-deposit into Kamino reverts in 4 of 6 adverse market conditions and strands the bridged funds. Landfall lands 6 of 6.
 <!-- /results:headline -->
 
-- **Try it:** open the app, connect any EVM or Solana wallet, and copy your addresses. Or press **Fire a live deposit** on the landing page: a spend-capped wallet on Base sends 1 USDC through Aurora and you watch it land on Solana. No wallet, funds or install needed.
+- **Try it:** open the app, connect any EVM or Solana wallet, and copy your addresses. Or press **Fire a live deposit** on the landing page: a spend-capped wallet on Base sends a little ETH, Aurora swaps it to USDC, and you watch it land in the vault on Solana. No wallet, funds or install needed.
 - **Review it in 5 minutes:** [JUDGES.md](JUDGES.md). Every claim and its evidence: [CLAIMS.md](CLAIMS.md). What is real and what is simulated: [MOCKS.md](MOCKS.md).
 
 ## Why the landing step matters
@@ -137,7 +137,7 @@ pnpm --filter @landfall/web dev
 | `AURORA_API_KEY` | Aurora Intents key (Intents Studio). Server side only; persistent addresses need it approved. |
 | `SOLANA_RPC_URL` | Mainnet RPC. The browser talks to it through `/api/solana-rpc`, a method allow-list. |
 | `KEEPER_SECRET_KEY`, `KEEPER_PUBLIC_KEY` | Keeper key that pays inbox rent and sweep fees; the public key is shown on `/vault`. |
-| `DEMO_ENABLED`, `DEMO_EVM_PRIVATE_KEY`, `DEMO_FIRE_AMOUNT_USDC`, `BASE_RPC_URL` | The "Fire a live deposit" button: a Base wallet holding only the demo budget, one fire per 45 s. |
+| `DEMO_ENABLED`, `DEMO_EVM_PRIVATE_KEY`, `DEMO_FIRE_ASSET` (`eth` or `usdc`), `DEMO_FIRE_AMOUNT_ETH`, `DEMO_FIRE_AMOUNT_USDC`, `BASE_RPC_URL` | The "Fire a live deposit" button: a Base wallet holding only the demo budget, one fire per 45 s. |
 | `MAX_NEW_INBOXES_PER_HOUR` | Global cap on new inboxes (the keeper pays their rent). |
 
 ### For agents

@@ -1,4 +1,4 @@
-import { fireViaAddress, fireViaConnect } from "@/lib/server/demo";
+import { demoBudget, fireViaAddress, fireViaConnect } from "@/lib/server/demo";
 import { clientIp, limiter } from "@/lib/server/auth";
 import { bad, handle, json } from "@/lib/server/http";
 
@@ -13,3 +13,6 @@ export const POST = handle(async (req) => {
   const { route } = (await req.json().catch(() => ({}))) as { route?: "address" | "connect" };
   return json(route === "connect" ? await fireViaConnect() : await fireViaAddress());
 });
+
+/** What a fire sends, for the page copy. No balances, no addresses. */
+export const GET = handle(async () => json(demoBudget(), { headers: { "cache-control": "s-maxage=60" } }));

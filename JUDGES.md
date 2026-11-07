@@ -6,7 +6,7 @@ _Not deployed from this checkout: `eval/results/deployment.json` is written by `
 
 ## 1. Watch a deposit land (1 minute, no wallet)
 
-Open the landing page and press **Fire a live deposit**. A wallet on Base that only holds the demo budget sends 1 USDC to the demo owner's permanent address. Aurora swaps it to Solana USDC, the keeper sweeps the inbox, and the drawer shows each step with its transaction. The new shares show up on `/vault` under "Landed".
+Open the landing page and press **Fire a live deposit**. A wallet on Base that only holds the demo budget sends a little ETH through Intents Connect: Aurora swaps it to USDC on Solana and the bridge-in steps deposit it into the vault in the same transaction. The second button sends to the demo owner's permanent address instead, where the keeper sweeps it. The drawer shows each step with its transaction, and the new shares show up on `/vault` under "Landed".
 
 ## 2. Get your own addresses (2 minutes, any wallet)
 

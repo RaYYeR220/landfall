@@ -7,7 +7,7 @@ The line between what runs for real and what is a simulation, part by part.
 | Landfall program | Deployed on Solana mainnet; every app action is a mainnet transaction | — |
 | Kamino and Jupiter Lend | The live mainnet USDC reserve and lending pool; allocations are real CPIs | — |
 | Aurora Intents (Deposits, Connect, Swap API) | Production Aurora APIs; there is no Aurora testnet | — |
-| "Fire a live deposit" | A real 1 USDC transfer on Base from a spend-capped wallet, landing on Solana mainnet | — |
+| "Fire a live deposit" | A real ETH transfer on Base from a spend-capped wallet, swapped by Aurora and landing on Solana mainnet | — |
 | Vault numbers on `/vault` and the landing page | Read from chain on every request (NAV, shares, allocation, Kamino reserve limits) | — |
 | APYs | Kamino's and Jupiter's public APIs, cached for 5 minutes | — |
 | Landing eval (`eval/results/landing.json`) | Real mainnet account snapshots of Kamino, Jupiter Lend and USDC, real program binaries, real transactions in LiteSVM | Each adverse condition is one patched byte range of a snapshot (for example the reserve's deposit limit set to its current liquidity). The direct recipe is the documented Kamino bridge-in, rebuilt as the same steps. |

@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 type Route = "connect" | "address";
-type FireOk = { route: Route; owner: string; txHash: string; amount?: string };
+type FireOk = { route: Route; owner: string; txHash: string; amount?: string; display?: string };
 type Landing = { signature?: string; shares?: number };
 type LandedEvent = { kind: string; signature: string; time: number | null; shares?: number };
 
@@ -25,10 +25,6 @@ const short = (s: string) => (s.length > 12 ? `${s.slice(0, 4)}…${s.slice(-4)}
 const clock = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-};
-const usdc = (base?: string) => {
-  const n = Number(base);
-  return Number.isFinite(n) && n > 0 ? n / 1e6 : 1;
 };
 
 const sleep = (ms: number, signal: AbortSignal) =>
@@ -81,6 +77,15 @@ export function LiveDepositProvider({ children }: { children: ReactNode }) {
   const close = () => dlg.current?.close();
 
   useEffect(() => () => ctrlRef.current?.abort(), []);
+
+  // what the demo wallet sends (e.g. "0.0007 ETH"), so the copy never guesses
+  const [budget, setBudget] = useState<string>();
+  useEffect(() => {
+    fetch("/api/demo/fire")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => j?.display && setBudget(String(j.display)))
+      .catch(() => undefined);
+  }, []);
 
   const busy = run.phase === "firing" || run.phase === "bridging";
   useEffect(() => {
@@ -137,9 +142,9 @@ export function LiveDepositProvider({ children }: { children: ReactNode }) {
       setRun({ phase: "error", route, startedAt, message: "the request did not reach the server, check your connection and try again" });
       return;
     }
-    const ok: FireOk = { route, owner: String(body.owner), txHash: String(body.txHash), amount: body.amount };
+    const ok: FireOk = { route, owner: String(body.owner), txHash: String(body.txHash), amount: body.amount, display: body.display };
     setRun({ phase: "bridging", route, startedAt, fire: ok });
-    window.dispatchEvent(new CustomEvent("landfall:drop", { detail: { arm: "base", from: `${usdc(ok.amount)} USDC · Base`, to: "→ lfUSDC" } }));
+    window.dispatchEvent(new CustomEvent("landfall:drop", { detail: { arm: "base", from: `${ok.display ?? budget ?? "deposit"} · Base`, to: "→ lfUSDC" } }));
     void watch(ok, route, startedAt, ctrl.signal);
   };
 
@@ -179,7 +184,7 @@ export function LiveDepositProvider({ children }: { children: ReactNode }) {
             </button>
           </div>
           <h2 id="lf-drawer-title" className="lf-drawer-h">Fire a live deposit</h2>
-          <p className="lf-drawer-lede">A spend-capped demo wallet on Base sends 1 USDC through Intents Connect. Watch it land.</p>
+          <p className="lf-drawer-lede">A spend-capped demo wallet on Base sends {budget ?? "a small deposit"} through Intents Connect; Aurora swaps it to USDC and it lands in the vault on Solana. Watch it happen.</p>
 
           <div className="lf-drawer-actions">
             <button type="button" className="btn btn-primary" disabled={busy} onClick={() => fire("connect")}>
@@ -192,7 +197,7 @@ export function LiveDepositProvider({ children }: { children: ReactNode }) {
 
           <ol className="lf-steps" aria-live="polite">
             <Step state={s1} title={route === "address" ? "Sent on Base, no signature" : "Signed on Base"}>
-              {route === "address" ? "A plain USDC transfer to the demo’s permanent EVM address." : "One Intents Connect signature from the demo wallet."}
+              {route === "address" ? "A plain transfer to the demo’s permanent EVM address." : "One Intents Connect signature from the demo wallet."}
             </Step>
             <Step state={s2} title="Deposit sent">
               {f ? (
@@ -200,7 +205,7 @@ export function LiveDepositProvider({ children }: { children: ReactNode }) {
                   {short(f.txHash)} on Basescan ↗
                 </a>
               ) : (
-                "1 USDC on Base."
+                `${budget ?? "A small deposit"} on Base.`
               )}
             </Step>
             <Step state={s3} title="Bridging via Aurora Intents">
