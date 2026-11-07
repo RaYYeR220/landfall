@@ -5,9 +5,9 @@
  *
  *   KEEPER_SECRET_KEY=… SOLANA_RPC_URL=… pnpm --filter @landfall/keeper start
  */
-import { Connection, Keypair } from "@solana/web3.js";
+import { Connection, Keypair, type PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
-import { crankOnce, vaultAddresses } from "@landfall/sdk";
+import { crankOnce, listInboxes, vaultAddresses } from "@landfall/sdk";
 
 const secret = process.env.KEEPER_SECRET_KEY;
 if (!secret) throw new Error("KEEPER_SECRET_KEY is required");
@@ -17,6 +17,9 @@ const vault = vaultAddresses();
 
 const TICK_MS = Number(process.env.KEEPER_TICK_MS ?? 15_000);
 const SYNC_EVERY = Number(process.env.KEEPER_SYNC_EVERY ?? 40); // ticks (~10 min)
+// listing inboxes is the one heavy RPC call (getProgramAccounts); refresh it every few minutes
+const LIST_EVERY = Number(process.env.KEEPER_LIST_EVERY ?? 20);
+let owners: PublicKey[] = [];
 let backoff = 0;
 
 const log = (msg: string, extra: Record<string, unknown> = {}) =>
@@ -26,7 +29,8 @@ const loop = async () => {
   log("keeper up", { keeper: keeper.publicKey.toBase58(), vault: vault.vault.toBase58(), tickMs: TICK_MS });
   for (let tick = 0; ; tick++) {
     try {
-      const actions = await crankOnce({ connection, keeper, vault, priorityFee: 20_000, sync: tick % SYNC_EVERY === 0 });
+      if (tick % LIST_EVERY === 0) owners = (await listInboxes(connection, vault)).map((i) => i.owner);
+      const actions = await crankOnce({ connection, keeper, vault, owners, priorityFee: 20_000, sync: tick % SYNC_EVERY === 0 });
       for (const a of actions) log(a.kind, a);
       backoff = 0;
     } catch (e) {
