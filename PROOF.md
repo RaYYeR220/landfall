@@ -44,7 +44,7 @@ The demo wallet `0xA37000D10e8e7Bf120461c873d2901aD38B2d3cE` sent 0.0006 ETH on 
 | Step | Time (UTC, Nov 7) | Link |
 |---|---|---|
 | Keeper opens the owner's inbox (after the signed sign-in) | 23:08:42 | [43uP43Ta…](https://solscan.io/tx/43uP43TaTYAbaSpMoCRRsU3VK6JDSGD5zEKF2BQXrWi1qpJn7RPexKf1XxUiMv2VuBjHv6ComdBtFjSoiQg58SoU) |
-| 0.0006 ETH sent on Base to `0x0C42B9Ad948CB00650c56DE2E99Bc3f8a2dFf2EC` |  | [0x0d16f7ca…](https://basescan.org/tx/0x0d16f7caa21049f689833afc033ea72fa46f198812dfe9f200e26c1c09f310ed) |
+| 0.0006 ETH sent on Base to `0x0C42B9Ad948CB00650c56DE2E99Bc3f8a2dFf2EC` | 23:08:47 | [0x0d16f7ca…](https://basescan.org/tx/0x0d16f7caa21049f689833afc033ea72fa46f198812dfe9f200e26c1c09f310ed) |
 | Aurora pays USDC into inbox `93VdSUGN…` | 23:10:19 | [2GVYg5sN…](https://solscan.io/tx/2GVYg5sN6tqgB3yK8vqbEz7SLrgsRNzriJhycV2vnpfDV69xFzdYKa3Are65KeYJEsVc7Se6cC9REwU1XSS2ZNd4) |
 | Keeper sweeps the inbox, lfUSDC minted to the owner | 23:10:25 | [SUxzdc1c…](https://solscan.io/tx/SUxzdc1cnNXWGwhLsy4s4B2jsdVH2bzAVnBQ91fbiyFhLPDAoDbPKu1YatnW5vFU4AUdM1jxFRzGLZfWQTeH9CK) |
 
