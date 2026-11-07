@@ -3,7 +3,7 @@
 #   RPC=https://... scripts/program-hash.sh [program id]
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PID="${1:-$(solana address -k "$ROOT/target/deploy/landfall-keypair.json")}"
+PID="${1:-$(grep -oE 'address!\("[1-9A-HJ-NP-Za-km-z]+"\)' "$ROOT/programs/landfall/src/constants.rs" | head -1 | grep -oE '[1-9A-HJ-NP-Za-km-z]{32,44}')}"
 TMP="$(mktemp)"
 solana program dump "$PID" "$TMP" --url "${RPC:-https://api.mainnet-beta.solana.com}" >/dev/null
 python - "$TMP" <<'PY'
