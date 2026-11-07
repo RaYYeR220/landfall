@@ -63,6 +63,8 @@ flowchart LR
 - Intents Connect account → any Solana address: a steps-only execution.
 - Intents Connect account → any chain: an out-operation that redeems on Solana and bridges out, one signature.
 
+**Fees.** The Aurora key carries an integrator fee set in Intents Studio's rule engine: 0.05% on stablecoin-to-stablecoin routes (most deposits) and 0.25% on everything else, of which Landfall keeps 60% and Aurora 40%. The vault itself charges no management or performance fee; the only on-chain fee is the inbox sweep fee (at most 1%, currently 0.01 USDC), which pays the keeper.
+
 **Recovery.** Every terminal state has a button in the app: sweep an inbox now, finish a stranded bridge-in into the vault from the intermediary's balance (steps-only), or open a support case for a failed persistent deposit.
 
 ## The program

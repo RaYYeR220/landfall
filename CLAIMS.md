@@ -40,6 +40,7 @@ Tiers:
 | Intents Connect bridge-in that lands in the vault in one signature | VERIFIED-LIVE | PROOF.md (bridge-in from Base) |
 | Intents Connect out-operation that redeems on Solana and bridges out | VERIFIED-LIVE | PROOF.md |
 | Swap API withdrawal from a Solana wallet to another chain, with refunds to the wallet | VERIFIED-LIVE | PROOF.md |
+| Integrator revenue: 0.05% on stablecoin routes, 0.25% on others, 60% to Landfall (Intents Studio fee rules on the production key) | VERIFIED-LIVE | quotes from the production key show the fee; PROOF.md |
 | Confidential persistent addresses land in the same inbox | VERIFIED-LIVE when Aurora serves them for the key | PROOF.md |
 
 ## Modeled
