@@ -20,3 +20,6 @@ keys/
 programs/landfall/tests/fixtures/programs/
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+eval/results/*.partial.json

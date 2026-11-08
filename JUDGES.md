@@ -4,6 +4,7 @@
 - **Live app:** https://landfall-peach.vercel.app
 - **Program:** [`12pHvK6FYFHP748kom4F3AbKcymKGVN2r9n1GtX3zdyZ`](https://solscan.io/account/12pHvK6FYFHP748kom4F3AbKcymKGVN2r9n1GtX3zdyZ)
 - **Vault:** [`CpctatgJ8hBKgMF27LeHo4erLcDEhTYsXM829hLtbNnf`](https://solscan.io/account/CpctatgJ8hBKgMF27LeHo4erLcDEhTYsXM829hLtbNnf) · **Share token (lfUSDC):** [`2UrXgqxWHFk75NzWTAxviwgc7iY1N3xZCzjr9ttxp2Ce`](https://solscan.io/account/2UrXgqxWHFk75NzWTAxviwgc7iY1N3xZCzjr9ttxp2Ce)
+- **Source:** https://github.com/RaYYeR220/landfall
 <!-- /results:links -->
 
 ## 1. Watch a deposit land (1 minute, no wallet)

@@ -147,7 +147,7 @@ pnpm --filter @landfall/web dev
 `packages/mcp` is an MCP server over the same API. Agents can look up a wallet's permanent addresses, read its position and the vault, and get unsigned Solana transactions for deposits and for withdrawals to Solana or another chain, which the wallet then signs. It never holds a key.
 
 ```json
-{ "mcpServers": { "landfall": { "command": "npx", "args": ["tsx", "packages/mcp/src/index.ts"], "env": { "LANDFALL_URL": "https://<app>", "SOLANA_RPC_URL": "https://<rpc>" } } } }
+{ "mcpServers": { "landfall": { "command": "npx", "args": ["tsx", "packages/mcp/src/index.ts"], "env": { "LANDFALL_URL": "https://landfall-peach.vercel.app", "SOLANA_RPC_URL": "https://api.mainnet-beta.solana.com" } } } }
 ```
 
 ### Keeper
