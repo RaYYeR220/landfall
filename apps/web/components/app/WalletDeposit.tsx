@@ -94,6 +94,9 @@ export default function WalletDeposit({ identity }: { identity: Identity }) {
     <section className="card p-6 md:p-8">
       <p className="eyebrow">From this wallet · one signature</p>
       <h2 className="mt-2 text-2xl font-medium tracking-tight">Deposit and land in one flow</h2>
+      {process.env.NEXT_PUBLIC_IC_NOTICE && (
+        <p className="mt-3 max-w-2xl rounded-field border border-warn/40 px-4 py-3 text-sm text-warn">{process.env.NEXT_PUBLIC_IC_NOTICE}</p>
+      )}
       <p className="mt-2 max-w-xl text-[15px] text-ink-2">
         Intents Connect bridges what you send to USDC on Solana and, in the same transaction, your Solana account deposits it into the vault. No bridge UI, no SOL needed.
       </p>

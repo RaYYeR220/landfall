@@ -152,7 +152,7 @@ export function LiveDepositProvider({ children }: { children: ReactNode }) {
   const ph = run.phase;
   const fired = ph === "bridging" || ph === "landed" || ph === "timeout";
   const f = fired ? (run as { fire: FireOk }).fire : null;
-  const route: Route = ph === "idle" ? "connect" : run.route;
+  const route: Route = ph === "idle" ? "address" : run.route;
   const s1: StepState = ph === "firing" ? "run" : fired ? "done" : ph === "error" ? "fail" : "wait";
   const s2: StepState = fired ? "done" : "wait";
   const s3: StepState = ph === "bridging" || ph === "timeout" ? "run" : ph === "landed" ? "done" : "wait";
@@ -184,14 +184,14 @@ export function LiveDepositProvider({ children }: { children: ReactNode }) {
             </button>
           </div>
           <h2 id="lf-drawer-title" className="lf-drawer-h">Fire a live deposit</h2>
-          <p className="lf-drawer-lede">A spend-capped demo wallet on Base sends {budget ?? "a small deposit"} through Intents Connect; Aurora swaps it to USDC and it lands in the vault on Solana. Watch it happen.</p>
+          <p className="lf-drawer-lede">A spend-capped demo wallet on Base sends {budget ?? "a small deposit"} to its permanent deposit address. Aurora swaps it to USDC on Solana and the keeper lands it in the vault. Nobody signs anything. Watch it happen.</p>
 
           <div className="lf-drawer-actions">
-            <button type="button" className="btn btn-primary" disabled={busy} onClick={() => fire("connect")}>
+            <button type="button" className="btn btn-primary" disabled={busy} onClick={() => fire("address")}>
               {busy ? "Running…" : ph === "idle" ? "Fire" : "Fire again"}
             </button>
-            <button type="button" className="lf-textbtn" disabled={busy} onClick={() => fire("address")}>
-              Send to the permanent address instead
+            <button type="button" className="lf-textbtn" disabled={busy} onClick={() => fire("connect")}>
+              Send through Intents Connect instead
             </button>
           </div>
 
