@@ -49,3 +49,13 @@ The demo wallet `0xA37000D10e8e7Bf120461c873d2901aD38B2d3cE` sent 0.0006 ETH on 
 | Keeper sweeps the inbox, lfUSDC minted to the owner | 23:10:25 | [SUxzdc1c…](https://solscan.io/tx/SUxzdc1cnNXWGwhLsy4s4B2jsdVH2bzAVnBQ91fbiyFhLPDAoDbPKu1YatnW5vFU4AUdM1jxFRzGLZfWQTeH9CK) |
 
 From ETH on Base to vault shares on Solana in about 100 seconds, with nothing signed after the one-time sign-in.
+
+### 2. The keeper allocates idle USDC into Kamino and Jupiter Lend
+
+Permissionless allocation toward the curator's 60 / 40 weights, above the 10% idle buffer, priced and capped by the program.
+
+| Step | Time (UTC, Nov 8) | Link |
+|---|---|---|
+| `refresh_reserve` + `allocate_kamino` 1.389015 USDC | 02:46:55 | [2uEE1REJ…](https://solscan.io/tx/2uEE1REJMhLRm8PpjuXMtAD8P7Ts6E19N7RpJucXodCNJ6KgPp3xiVygXNBruRW1fcTEkj9iHEab22ZEtptw84Jf) |
+| `allocate_jlend` 0.694509 USDC | 02:46:55 | [337vUeph…](https://solscan.io/tx/337vUephfqSvnxakTbajdPiTSseD6HQVHNfKSL6iSowzKgcXj4jsaPK6xbcLPpqwDVgjVoKPT9DcEUadQTjDWh9Q) |
+| `sync_nav` caches both strategies' live values | 02:46:55 | [2r6p2srM…](https://solscan.io/tx/2r6p2srMPv5om212yDXTqmhikrE9kaqyBgjzvS56HJ9JZ6DCaMRgwSE8a21JU68EbwycvMKaG3Kte4WjUfdBcEGt) |
