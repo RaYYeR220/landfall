@@ -20,6 +20,8 @@ const SYNC_EVERY = Number(process.env.KEEPER_SYNC_EVERY ?? 40); // ticks (~10 mi
 // listing inboxes is the one heavy RPC call (getProgramAccounts); refresh it every few minutes
 const LIST_EVERY = Number(process.env.KEEPER_LIST_EVERY ?? 20);
 let owners: PublicKey[] = [];
+// smallest amount worth moving into a strategy (USDC base units)
+const MIN_ALLOCATION = BigInt(process.env.KEEPER_MIN_ALLOCATION ?? "2000000");
 let backoff = 0;
 
 const log = (msg: string, extra: Record<string, unknown> = {}) =>
@@ -30,7 +32,7 @@ const loop = async () => {
   for (let tick = 0; ; tick++) {
     try {
       if (tick % LIST_EVERY === 0) owners = (await listInboxes(connection, vault)).map((i) => i.owner);
-      const actions = await crankOnce({ connection, keeper, vault, owners, priorityFee: 20_000, sync: tick % SYNC_EVERY === 0 });
+      const actions = await crankOnce({ connection, keeper, vault, owners, minAllocation: MIN_ALLOCATION, priorityFee: 20_000, sync: tick % SYNC_EVERY === 0 });
       for (const a of actions) log(a.kind, a);
       backoff = 0;
     } catch (e) {
