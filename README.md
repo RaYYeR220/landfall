@@ -157,7 +157,7 @@ The keeper runs anywhere Node runs: `KEEPER_SECRET_KEY=… SOLANA_RPC_URL=… pn
 ## Honest limits
 
 - Mainnet only. Aurora Intents has no testnet, so the program was proven on LiteSVM against mainnet account snapshots before it went live, and the vault runs with small caps.
-- Persistent deposit addresses need an Aurora API key approved for them. Without one, `/api/addresses` reports `pending-approval` and the wallet flow (Intents Connect) still works.
+- Intents Connect is in beta. On mainnet, Aurora's Solana executor accepted our signed executions (bridge-in, steps-only and out-operation) and then failed them without broadcasting a transaction; the same steps run end to end on a mainnet fork and simulate cleanly against mainnet (PROOF.md, flow 3). The permanent-address path does not depend on it and runs live. Bridged funds are never lost: they wait in the wallet's own Intents Connect account and appear in the recovery centre.
 - Failed persistent deposits are retried by Aurora rather than refunded; the app links to the support flow for those.
 - Strategy values between instructions come from the last `sync_nav`; every share-pricing instruction reads them live.
 - No audit beyond our own review. Don't put more in than you'd be happy to lose.

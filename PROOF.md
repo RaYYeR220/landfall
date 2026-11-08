@@ -59,3 +59,15 @@ Permissionless allocation toward the curator's 60 / 40 weights, above the 10% id
 | `refresh_reserve` + `allocate_kamino` 1.389015 USDC | 02:46:55 | [2uEE1REJ…](https://solscan.io/tx/2uEE1REJMhLRm8PpjuXMtAD8P7Ts6E19N7RpJucXodCNJ6KgPp3xiVygXNBruRW1fcTEkj9iHEab22ZEtptw84Jf) |
 | `allocate_jlend` 0.694509 USDC | 02:46:55 | [337vUeph…](https://solscan.io/tx/337vUephfqSvnxakTbajdPiTSseD6HQVHNfKSL6iSowzKgcXj4jsaPK6xbcLPpqwDVgjVoKPT9DcEUadQTjDWh9Q) |
 | `sync_nav` caches both strategies' live values | 02:46:55 | [2r6p2srM…](https://solscan.io/tx/2r6p2srMPv5om212yDXTqmhikrE9kaqyBgjzvS56HJ9JZ6DCaMRgwSE8a21JU68EbwycvMKaG3Kte4WjUfdBcEGt) |
+
+### 3. Intents Connect on mainnet: signed and accepted, never broadcast by Aurora's executor
+
+All three Intents Connect executions below were created with Landfall's steps, signed by the demo wallet and accepted by the API. Aurora's Solana executor then marked each `OPERATION_FAILED` without broadcasting a transaction; there is no failed transaction on chain. The same steps, encoded the way the Aurora backend encodes them, run end to end on a mainnet fork (`bash scripts/fork.sh`) and simulate cleanly against mainnet (landing step: 11,677 compute units).
+
+| Execution | Kind | Created (UTC) | Result |
+|---|---|---|---|
+| `d684e086-ef5a-4e20-a006-34a33d956681` | bridge-in, 0.0006 ETH on Base ([0x92ce8d07…](https://basescan.org/tx/0x92ce8d07af60c9f4067b4cc194b2fdf1114760c633786ec8d38f9777033af641)) → deposit into the vault | Nov 7 23:11 | bridged 1.097318 USDC arrived in the intermediary ([4ZKQf9UA…](https://solscan.io/tx/4ZKQf9UAFGuaBo2ArZRmK947ypFZSeqz1kqh8gRpKxYfPTEP5mJ8sLfkuwvnCY3k4wqPgtrqkuCVeyhKzX5fGrJR)); the step transaction was never sent |
+| `f9ab7077-5488-4e3b-91f0-dda53b46036f` | steps-only recovery: finish that USDC into the vault | Nov 8 02:22 | never sent |
+| `a8ed5f08-02e2-499e-87a2-bbcd9bb2ee48` | out-operation: redeem and bridge back to USDC on Base | Nov 8 02:32 | never sent |
+
+Nothing was lost. The 1.097318 USDC and the 1.315026 lfUSDC from flow 1 sit in the demo wallet's Intents Connect account [`4jxzL1Yw…`](https://solscan.io/account/4jxzL1YwFw5FtcraNLbkUFZo1P8spZAcjERWqXPYuytg), which only that wallet's signature can move, and the app's recovery centre lists the loose USDC with a "Finish into vault" action for when the executor runs.

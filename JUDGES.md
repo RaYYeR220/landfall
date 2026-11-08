@@ -9,11 +9,11 @@
 
 ## 1. Watch a deposit land (1 minute, no wallet)
 
-Open the landing page and press **Fire a live deposit**. A wallet on Base that only holds the demo budget sends a little ETH through Intents Connect: Aurora swaps it to USDC on Solana and the bridge-in steps deposit it into the vault in the same transaction. The second button sends to the demo owner's permanent address instead, where the keeper sweeps it. The drawer shows each step with its transaction, and the new shares show up on `/vault` under "Landed".
+Open the landing page and press **Fire a live deposit**. A wallet on Base that only holds the demo budget sends a little ETH to the demo owner's permanent deposit address. Aurora swaps it to USDC on Solana and pays the owner's inbox, and the keeper sweeps it into the vault. Nobody signs anything. The drawer shows each step with its transaction, and the new shares show up on `/vault` under "Landed". The same run is recorded in [PROOF.md](PROOF.md), flow 1.
 
 ## 2. Get your own addresses (2 minutes, any wallet)
 
-Open `/app`, connect an EVM or Solana wallet and sign the one-line ownership message. You get one permanent address per chain family (Bitcoin, Tron, Solana, TON, EVM and more), each with its transfer requirement and a QR code. Anything you send there lands as lfUSDC in your position. With a wallet you can also deposit in one signature through Intents Connect, and withdraw to the same wallet, any Solana address, or another chain.
+Open `/app`, connect an EVM or Solana wallet and sign the one-line ownership message. You get one permanent address per chain family (Bitcoin, Tron, Solana, TON, EVM and more), each with its transfer requirement and a QR code. Anything you send there lands as lfUSDC in your position. With a wallet you can also deposit in one signature through Intents Connect, and withdraw to the same wallet, any Solana address, or another chain; see PROOF.md, flow 3, for the current state of Intents Connect on mainnet.
 
 ## 3. Check the landing guarantee (1 minute)
 

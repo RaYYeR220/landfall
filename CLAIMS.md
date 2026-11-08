@@ -36,12 +36,14 @@ Tiers:
 
 | Claim | Tier | Evidence |
 |---|---|---|
-| Intents Deposits: one persistent address per chain family per owner, paying the owner's inbox on Solana | VERIFIED-LIVE once the API key is approved | `apps/web/lib/server/addresses.ts`; PROOF.md |
-| Intents Connect bridge-in that lands in the vault in one signature | VERIFIED-LIVE | PROOF.md (bridge-in from Base) |
-| Intents Connect out-operation that redeems on Solana and bridges out | VERIFIED-LIVE | PROOF.md |
-| Swap API withdrawal from a Solana wallet to another chain, with refunds to the wallet | VERIFIED-LIVE | PROOF.md |
-| Integrator revenue: 0.05% on stablecoin routes, 0.25% on others, 60% to Landfall (Intents Studio fee rules on the production key) | VERIFIED-LIVE | quotes from the production key show the fee; PROOF.md |
-| Confidential persistent addresses land in the same inbox | VERIFIED-LIVE when Aurora serves them for the key | PROOF.md |
+| Intents Deposits: one permanent address per chain family per owner, paying the owner's inbox on Solana; ETH on Base landed as vault shares in ~100 s with no signature | VERIFIED-LIVE | PROOF.md, flow 1 |
+| Cross-chain swap built in: ETH on Base arrives as USDC on Solana | VERIFIED-LIVE | PROOF.md, flow 1 (Aurora payout tx) |
+| Integrator revenue: 0.05% on stablecoin routes, 0.25% on others, 60% to Landfall (Intents Studio fee rules on the production key) | VERIFIED-LIVE | quotes from the production key; PROOF.md |
+| The Intents Connect API accepts Landfall's steps (bridge-in, steps-only, out-operation) and the wallet signature | VERIFIED-LIVE | execution ids in PROOF.md, flow 3 |
+| Intents Connect bridge-in, steps-only recovery and out-operation run end to end | REPRODUCIBLE | `bash scripts/fork.sh` (mainnet fork, steps encoded the way the Aurora backend encodes them) |
+| … and on mainnet | NOT-CLAIMED | Aurora's Solana executor failed all three of our mainnet executions without broadcasting a transaction (PROOF.md, flow 3). The same steps simulate successfully against mainnet. No funds were lost: the bridged USDC sits in the wallet's own Intents Connect account. |
+| Swap API withdrawal from a Solana wallet to another chain, refunds to the wallet | REPRODUCIBLE | fork run (`swap-out`), live quote from the production key; not yet executed on mainnet |
+| Confidential permanent addresses land in the same inbox | NOT-CLAIMED live | implemented (`confidential: true` in the address book); not exercised on mainnet |
 
 ## Modeled
 
