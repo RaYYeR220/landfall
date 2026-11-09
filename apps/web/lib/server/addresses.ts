@@ -76,7 +76,19 @@ export const ensureInbox = async (owner: PublicKey, allowCreate: boolean) => {
 const cache = new Map<string, AddressBook>();
 
 /** Every chain's persistent deposit address for `owner`, all paying into the owner's inbox. */
+// concurrent requests for the same owner share one build, so Aurora is never asked to mint the same address twice at once
+const inflight = new Map<string, Promise<AddressBook>>();
+
 export const addressBook = async (owner: PublicKey, opts: { confidential?: boolean; allowCreate?: boolean } = {}): Promise<AddressBook> => {
+  const key = `${owner.toBase58()}:${Boolean(opts.confidential)}:${Boolean(opts.allowCreate)}`;
+  const running = inflight.get(key);
+  if (running) return running;
+  const p = buildAddressBook(owner, opts).finally(() => inflight.delete(key));
+  inflight.set(key, p);
+  return p;
+};
+
+const buildAddressBook = async (owner: PublicKey, opts: { confidential?: boolean; allowCreate?: boolean }): Promise<AddressBook> => {
   const confidential = Boolean(opts.confidential);
   const key = `${owner.toBase58()}:${confidential}`;
   const hit = cache.get(key);

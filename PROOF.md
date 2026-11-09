@@ -50,6 +50,8 @@ The demo wallet `0xA37000D10e8e7Bf120461c873d2901aD38B2d3cE` sent 0.0006 ETH on 
 
 From ETH on Base to vault shares on Solana in about 100 seconds, with nothing signed after the one-time sign-in.
 
+Note: Aurora minted two EVM deposit addresses for this owner 0.3 s apart with identical parameters (`0x0C42B9Ad…` at 23:08:45.833 and `0x985130D3…fD26` at 23:08:46.151, from two overlapping requests); both route to the same inbox `93VdSUGN…`, and the app now shows the second. Concurrent address-book requests are now coalesced so this can't recur.
+
 ### 2. The keeper allocates idle USDC into Kamino and Jupiter Lend
 
 Permissionless allocation toward the curator's 60 / 40 weights, above the 10% idle buffer, priced and capped by the program.
