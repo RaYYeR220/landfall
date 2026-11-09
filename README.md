@@ -11,6 +11,7 @@ A direct bridge-and-deposit into Kamino reverts in 4 of 6 adverse market conditi
 <!-- /results:headline -->
 
 - **Try it:** open the app, connect any EVM or Solana wallet, and copy your addresses. Or press **Fire a live deposit** on the landing page: a spend-capped wallet on Base sends a little ETH, Aurora swaps it to USDC, and you watch it land in the vault on Solana. No wallet, funds or install needed.
+- **Watch it (3 min):** https://youtu.be/Lrt5tZMUw5E
 - **Review it in 5 minutes:** [JUDGES.md](JUDGES.md). Every claim and its evidence: [CLAIMS.md](CLAIMS.md). What is real and what is simulated: [MOCKS.md](MOCKS.md).
 
 ## Why the landing step matters
