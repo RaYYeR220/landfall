@@ -41,7 +41,7 @@ Tiers:
 | Integrator revenue: 0.05% on stablecoin routes, 0.25% on others, 60% to Landfall (Intents Studio fee rules on the production key) | VERIFIED-LIVE | quotes from the production key; PROOF.md |
 | The Intents Connect API accepts Landfall's steps (bridge-in, steps-only, out-operation) and the wallet signature | VERIFIED-LIVE | execution ids in PROOF.md, flow 3 |
 | Intents Connect bridge-in, steps-only recovery and out-operation run end to end | REPRODUCIBLE | `bash scripts/fork.sh` (mainnet fork, steps encoded the way the Aurora backend encodes them) |
-| … and on mainnet | NOT-CLAIMED | Aurora's Solana executor failed all three of our mainnet executions without broadcasting a transaction (PROOF.md, flow 3). The same steps simulate successfully against mainnet. No funds were lost: the bridged USDC sits in the wallet's own Intents Connect account. |
+| … and on mainnet | NOT-CLAIMED | Aurora's Solana executor did not broadcast any of our three mainnet executions that call the Landfall program, while a control execution with a plain USDC transfer from the same wallet succeeded in ten seconds (PROOF.md, flow 3). The same steps simulate successfully against mainnet. No funds were lost: the bridged USDC sits in the wallet's own Intents Connect account. |
 | Swap API withdrawal from a Solana wallet to another chain, refunds to the wallet | REPRODUCIBLE | fork run (`swap-out`), live quote from the production key; not yet executed on mainnet |
 | Confidential permanent addresses land in the same inbox | NOT-CLAIMED live | implemented (`confidential: true` in the address book); not exercised on mainnet |
 
